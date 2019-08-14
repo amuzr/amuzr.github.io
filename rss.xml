@@ -1,0 +1,823 @@
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[Monthly Code]]></title><description><![CDATA[Coding every month]]></description><link>https://monthlycode.dev</link><generator>RSS for Node</generator><lastBuildDate>Wed, 14 Aug 2019 07:55:59 GMT</lastBuildDate><item><title><![CDATA[월간 코딩 사이트 만들기]]></title><description><![CDATA[…]]></description><link>https://monthlycode.dev/2017-07-30-make-monthly-coding-site/</link><guid isPermaLink="false">https://monthlycode.dev/2017-07-30-make-monthly-coding-site/</guid><pubDate>Sun, 30 Jul 2017 08:36:16 GMT</pubDate><content:encoded>&lt;p&gt;혼자 뭔가 하려는 프로젝트가 없을까 생각해봤는데 없다. 그래서 아무거나 한달에 하나씩 만들기 프로젝트를 하기로 했다.
+언어나 라이브러리에 관계없이 아무거나 직접 배워서 만들어보는 월간코딩. 한달에 하나씩 곡을 발표하는 월간윤종신이나 한달에 피자하나씩 할인하는 월간피자와 비슷한 느낌이다.&lt;/p&gt;
+&lt;p&gt;월간코딩의 시작은 월간코딩 페이지 만들기.&lt;/p&gt;
+&lt;p&gt;자바스크립트로 만들기로 하고 &lt;code class=&quot;language-text&quot;&gt;react&lt;/code&gt;, &lt;code class=&quot;language-text&quot;&gt;redux&lt;/code&gt;, &lt;code class=&quot;language-text&quot;&gt;rxjs&lt;/code&gt; 를 이용한다. 디자인은 &lt;code class=&quot;language-text&quot;&gt;material-ui&lt;/code&gt; 를 사용한다.&lt;/p&gt;
+&lt;p&gt;기본적으로 추가할 의존성은 아래와 같다.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;$ react-create-app monthly-coding
+$ &lt;span class=&quot;token builtin class-name&quot;&gt;cd&lt;/span&gt; monthly-coding
+$ &lt;span class=&quot;token function&quot;&gt;yarn&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;add&lt;/span&gt; react-router react-router-dom react-tab-event-plugin react-redux redux redux-logger redux-observable rxjs material-ui lodash&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;디렉토리 구조는 아래와 같이 만들어준다.
+App 으로 시작하는 js 는 삭제한다.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;|-- src
+        |-- index.css
+        |-- index.js
+        |-- registerServiceWorker.js
+        |-- actions
+        |-- components
+        |-- containers
+        |-- epics
+        |-- reducers&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;epics&lt;/code&gt; 는 &lt;code class=&quot;language-text&quot;&gt;redux-observable&lt;/code&gt;을 사용하기 위한 디렉토리이다.
+&lt;code class=&quot;language-text&quot;&gt;actions&lt;/code&gt; 와 &lt;code class=&quot;language-text&quot;&gt;reducers&lt;/code&gt; 는 &lt;code class=&quot;language-text&quot;&gt;redux&lt;/code&gt;에서 사용하고
+&lt;code class=&quot;language-text&quot;&gt;components&lt;/code&gt;에서는 재사용가능한 컴포넌트들을 정의하고(소문자로 파일을 만들도록 한다)
+&lt;code class=&quot;language-text&quot;&gt;containers&lt;/code&gt;에서는 실제 페이지들을 만든다.(첫문자는 대문자로)&lt;/p&gt;
+&lt;p&gt;default 페이지 코딩을 한다.
+&lt;code class=&quot;language-text&quot;&gt;main&lt;/code&gt; 페이지를 만들고 &lt;code class=&quot;language-text&quot;&gt;material-ui&lt;/code&gt;로 래핑할 &lt;code class=&quot;language-text&quot;&gt;app&lt;/code&gt; 컨테이너로 감싼다. 그리고 &lt;code class=&quot;language-text&quot;&gt;action&lt;/code&gt;, &lt;code class=&quot;language-text&quot;&gt;epic&lt;/code&gt;, &lt;code class=&quot;language-text&quot;&gt;reducer&lt;/code&gt; 를 각각 감싸는 combiner 를 만들어주고 마지막으로 &lt;code class=&quot;language-text&quot;&gt;index.js&lt;/code&gt; 를 코딩후 실행한다.&lt;/p&gt;
+&lt;p&gt;코드는 아래와 같다.&lt;/p&gt;
+&lt;h3&gt;containers/Main.js&lt;/h3&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;js&quot;&gt;&lt;pre class=&quot;language-js&quot;&gt;&lt;code class=&quot;language-js&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; React&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; Component &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;react&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;default&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;Main&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;Component&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;token function&quot;&gt;render&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;div&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;Hello &lt;span class=&quot;token operator&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;div&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h3&gt;components/app.js&lt;/h3&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;js&quot;&gt;&lt;pre class=&quot;language-js&quot;&gt;&lt;code class=&quot;language-js&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; React&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; Component&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; Children&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; cloneElement &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;react&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; MuiThemeProvider &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;material-ui/styles/MuiThemeProvider&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; injectTapEventPlugin &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;react-tap-event-plugin&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;token function&quot;&gt;injectTapEventPlugin&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;App&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;Component&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;token function&quot;&gt;render&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;
+      &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;MuiThemeProvider&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;
+        &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;div&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;Children&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;map&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;props&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;children&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token parameter&quot;&gt;child&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&gt;&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;cloneElement&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;child&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;div&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;
+      &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;MuiThemeProvider&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;default&lt;/span&gt; App&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h3&gt;actions/index.js&lt;/h3&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;js&quot;&gt;&lt;pre class=&quot;language-js&quot;&gt;&lt;code class=&quot;language-js&quot;&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h3&gt;epics/index.js&lt;/h3&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;js&quot;&gt;&lt;pre class=&quot;language-js&quot;&gt;&lt;code class=&quot;language-js&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; combineEpics &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;redux-observable&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;default&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;combineEpics&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h3&gt;reducers/index.js&lt;/h3&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;js&quot;&gt;&lt;pre class=&quot;language-js&quot;&gt;&lt;code class=&quot;language-js&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; combineReducers &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;redux&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; main &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;./main&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;default&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;combineReducers&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+  main&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h3&gt;reducers/main.js&lt;/h3&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;js&quot;&gt;&lt;pre class=&quot;language-js&quot;&gt;&lt;code class=&quot;language-js&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;default&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token parameter&quot;&gt;state &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; open&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token boolean&quot;&gt;false&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; action&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;token keyword&quot;&gt;switch&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;action&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;type&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;token comment&quot;&gt;//TODO&lt;/span&gt;
+    &lt;span class=&quot;token keyword&quot;&gt;default&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; state&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h3&gt;index.js&lt;/h3&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;js&quot;&gt;&lt;pre class=&quot;language-js&quot;&gt;&lt;code class=&quot;language-js&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; React &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;react&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; ReactDOM &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;react-dom&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; Provider &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;react-redux&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; createStore&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; applyMiddleware &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;redux&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; createLogger &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;redux-logger&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; BrowserRouter &lt;span class=&quot;token keyword&quot;&gt;as&lt;/span&gt; Router&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; Route &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;react-router-dom&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; createEpicMiddleware &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;redux-observable&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; registerServiceWorker &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;./registerServiceWorker&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;./index.css&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; rootEpic &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;./epics&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; rootReducer &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;./reducers&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; App &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;./components/app&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; Main &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;./containers/Main&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;const&lt;/span&gt; epicMiddleware &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;createEpicMiddleware&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;rootEpic&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;const&lt;/span&gt; loggerMiddleware &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;createLogger&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;const&lt;/span&gt; createStoreWithMiddleware &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;applyMiddleware&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;epicMiddleware&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; loggerMiddleware&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;createStore&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+
+ReactDOM&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;render&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;
+  &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;Provider store&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;createStoreWithMiddleware&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;rootReducer&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;
+    &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;Router&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;
+      &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;App&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;
+        &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;Route exact path&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;process&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;env&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token constant&quot;&gt;PUBLIC_URL&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;/&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt; component&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;Main&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;
+      &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;App&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;
+    &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;Router&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;
+  &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;Provider&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+  document&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;getElementById&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&apos;root&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token function&quot;&gt;registerServiceWorker&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;그리고 실행해주면&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;$ &lt;span class=&quot;token function&quot;&gt;yarn&lt;/span&gt; start&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Hello ! 를 보게된다.&lt;/p&gt;
+&lt;p&gt;여기까지하면 &lt;code class=&quot;language-text&quot;&gt;react&lt;/code&gt;,&lt;code class=&quot;language-text&quot;&gt;redux&lt;/code&gt;,&lt;code class=&quot;language-text&quot;&gt;rxjs&lt;/code&gt;,&lt;code class=&quot;language-text&quot;&gt;redux-observable&lt;/code&gt;,&lt;code class=&quot;language-text&quot;&gt;material-ui&lt;/code&gt; 보일러플레이트 세팅이 완료된다. &lt;a href=&quot;(https://github.com/amuzr/monthly-coding/tree/5861f6882d265a0b3b34cf17cdda0a3f682bdbb8)&quot;&gt;Github에서 확인&lt;/a&gt;&lt;/p&gt;</content:encoded></item><item><title><![CDATA[Redux vs MobX]]></title><description><![CDATA[여전히 와 가 강세이지만 최근  이 떠오르고 있다. 뿐만 아니라 자바스크립트 에서도  이 들어갈 예정이다.
+대표적인 라이브러리로는 시리즈들이 있는데 , 등 많은 언어에서 을 지원하고 있다. 그 Rx…]]></description><link>https://monthlycode.dev/2017-04-04-redux-vs-mobx/</link><guid isPermaLink="false">https://monthlycode.dev/2017-04-04-redux-vs-mobx/</guid><pubDate>Tue, 04 Apr 2017 03:30:26 GMT</pubDate><content:encoded>&lt;p&gt;여전히 &lt;code class=&quot;language-text&quot;&gt;OOP&lt;/code&gt;와 &lt;code class=&quot;language-text&quot;&gt;FP&lt;/code&gt;가 강세이지만 최근 &lt;code class=&quot;language-text&quot;&gt;Reactive Programming&lt;/code&gt; 이 떠오르고 있다. &lt;code class=&quot;language-text&quot;&gt;Java9&lt;/code&gt;뿐만 아니라 자바스크립트 &lt;code class=&quot;language-text&quot;&gt;ES2017&lt;/code&gt;에서도 &lt;code class=&quot;language-text&quot;&gt;Observable&lt;/code&gt; 이 들어갈 예정이다.
+대표적인 라이브러리로는 &lt;code class=&quot;language-text&quot;&gt;Rx&lt;/code&gt;시리즈들이 있는데 &lt;code class=&quot;language-text&quot;&gt;RxJava&lt;/code&gt;,&lt;code class=&quot;language-text&quot;&gt;RxJS&lt;/code&gt; 등 많은 언어에서 &lt;code class=&quot;language-text&quot;&gt;Reactive Programming&lt;/code&gt;을 지원하고 있다.&lt;/p&gt;
+&lt;p&gt;그 Rx프로그래밍 중에 최근 관심을 가지게 된 것이 &lt;code class=&quot;language-text&quot;&gt;MobX&lt;/code&gt; 이다.
+그저 &lt;code class=&quot;language-text&quot;&gt;Observable&lt;/code&gt; 을 구현했다고만 생각했는데 &lt;code class=&quot;language-text&quot;&gt;React Conf 2017&lt;/code&gt; 영상을 보고 생각한것과는 상당히 다르다는것을 느꼈다.&lt;/p&gt;
+&lt;p&gt;간단하게 비교하자면&lt;/p&gt;
+&lt;h3&gt;setState vs Redux vs MobX&lt;/h3&gt;
+&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;setState&lt;/code&gt; 는 &lt;code class=&quot;language-text&quot;&gt;React&lt;/code&gt; 의 사이클을 이해할 수 있는 가장 좋은 방법이다.
+&lt;code class=&quot;language-text&quot;&gt;Redux&lt;/code&gt; 와 &lt;code class=&quot;language-text&quot;&gt;MobX&lt;/code&gt; 는 &lt;code class=&quot;language-text&quot;&gt;setState&lt;/code&gt;를 각각 &lt;code class=&quot;language-text&quot;&gt;Functional Programming&lt;/code&gt; 과 &lt;code class=&quot;language-text&quot;&gt;Observable Programming&lt;/code&gt;으로 코딩 할 수 있는 방법이라고 할 수 있겠다.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;setState
+React 를 이해하기 쉬운 필수적인 방법이다. 꼭 한번은 만들어보는 것이 좋다.&lt;/li&gt;
+&lt;li&gt;Redux
+이벤트 기반으로 작동하는 시스템에 유리하고 잦은 유지보수 그리고 변하기 쉬운 큰 어플리케이션에 유리하다.
+러닝커브는 상대적으로 높다.
+내부 구조는 하나의 전역 &lt;code class=&quot;language-text&quot;&gt;Store&lt;/code&gt; 를 통해 이벤트를 전달하고 각각의 이벤트를 정의해 주어야 한다.&lt;/li&gt;
+&lt;li&gt;MobX
+실시간으로 변하는 시스템에 유리하고 비교적 심플한 어플리케이션에 유리하다.
+러닝커브는 상대적으로 낮다.
+내부구조는 &lt;code class=&quot;language-text&quot;&gt;@(어노테이션)&lt;/code&gt; 을 통해 여러개의 &lt;code class=&quot;language-text&quot;&gt;Store&lt;/code&gt;를 통해 상태를 실시간으로 반영한다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;자세한 사항은 &lt;a href=&quot;https://youtu.be/76FRrbY18Bs&quot;&gt;Redux vs MobX&lt;/a&gt;을 보자 :D&lt;/p&gt;
+&lt;p&gt;발표자의 마지막 말이 너무 마음에 든다.&lt;/p&gt;
+&lt;p&gt;Overall, Pick the tool makes you a happy developer. (결과적으로 너를 행복한 개발자로 만들어주는 툴을 선택해라)&lt;/p&gt;</content:encoded></item><item><title><![CDATA[React와 Redux를 공부하기 위한 앱 세팅]]></title><description><![CDATA[와  그리고  를 이용하여 현재 글을 쓰고 있는 이 Jekyll 테마를 만들기 위해 공부를 하고 있다. 오랜만에 를 사용해서 만들려다보니 세팅부터 참 많은시간이 걸렸다. 먼저 지난주까진 ES…]]></description><link>https://monthlycode.dev/2017-04-03-setting-react-and-redux-app/</link><guid isPermaLink="false">https://monthlycode.dev/2017-04-03-setting-react-and-redux-app/</guid><pubDate>Sun, 02 Apr 2017 16:07:21 GMT</pubDate><content:encoded>&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;React&lt;/code&gt; 와 &lt;code class=&quot;language-text&quot;&gt;Redux&lt;/code&gt; 그리고 &lt;code class=&quot;language-text&quot;&gt;Material-ui&lt;/code&gt; 를 이용하여 현재 글을 쓰고 있는 이 Jekyll 테마를 만들기 위해 공부를 하고 있다.&lt;/p&gt;
+&lt;p&gt;오랜만에 &lt;code class=&quot;language-text&quot;&gt;React&lt;/code&gt;를 사용해서 만들려다보니 세팅부터 참 많은시간이 걸렸다.&lt;/p&gt;
+&lt;p&gt;먼저 지난주까진 ES6 문법들을 공부했고 써먹을 재료들을 모았다.
+아직 머리속에 대부분 있지만 차근차근 블로그에 정리해 나갈 예정이다.&lt;/p&gt;
+&lt;p&gt;오늘 &lt;code class=&quot;language-text&quot;&gt;React&lt;/code&gt; 와 &lt;code class=&quot;language-text&quot;&gt;React-router&lt;/code&gt; 를 세팅하면서 겪은 삽질이다.&lt;/p&gt;
+&lt;h3&gt;Webpack 2&lt;/h3&gt;
+&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;react&lt;/code&gt; 얘길 하다가 뜬금없이 &lt;code class=&quot;language-text&quot;&gt;webpack&lt;/code&gt;이 등장한 이유는 몇달전 그리고 며칠전 모았던 사이트들과 코드들은 &lt;code class=&quot;language-text&quot;&gt;webpack&lt;/code&gt; 1버전 기준으로 작성되어 있다. 하지만 &lt;code class=&quot;language-text&quot;&gt;webpack2&lt;/code&gt; 업데이트를 접한지도 꽤 됐고 이걸로 적응하려니 시작부터 실행이 되지 않는다.&lt;/p&gt;
+&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;webpack1&lt;/code&gt; 에서 &lt;code class=&quot;language-text&quot;&gt;webpack2&lt;/code&gt; 로 바뀌면서 삽질한 몇가지 부분을 공유하려 한다.&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code class=&quot;language-text&quot;&gt;entry&lt;/code&gt; 옵션엔 더 이상 배열을 담을 수 없다.
+문제가 됐던건 react-hot-loader 를 적용하려고 entry 경로를 넣어주는 것이었는데 넣어줄 필요가 없다. 그냥 잘 된다.&lt;/li&gt;
+&lt;li&gt;&lt;code class=&quot;language-text&quot;&gt;mudule&lt;/code&gt; 옵션에서 &lt;code class=&quot;language-text&quot;&gt;loaders&lt;/code&gt; 옵션은 &lt;code class=&quot;language-text&quot;&gt;rules&lt;/code&gt; 로 바뀌었다.&lt;/li&gt;
+&lt;li&gt;마찬가지로 &lt;code class=&quot;language-text&quot;&gt;loaders&lt;/code&gt; 의 하위옵션이었던 &lt;code class=&quot;language-text&quot;&gt;loader&lt;/code&gt; 는 &lt;code class=&quot;language-text&quot;&gt;use&lt;/code&gt; 로 바꼈고 사용법도 다소 바뀌었다.&lt;/li&gt;
+&lt;li&gt;loader 의 이름은 뒤에 -loader 를 붙여야 된다. 더이상 &lt;code class=&quot;language-text&quot;&gt;react-hot&lt;/code&gt; 또는 &lt;code class=&quot;language-text&quot;&gt;babel&lt;/code&gt; 이렇게 끝나서는 안된다.
+&lt;code class=&quot;language-text&quot;&gt;react-hot-loader&lt;/code&gt; 그리고 &lt;code class=&quot;language-text&quot;&gt;babel-loader&lt;/code&gt; 이렇게 바꿔준다.&lt;/li&gt;
+&lt;li&gt;resolve - extensions 옵션에 공백옵션을 더 이상 줄 수 없다.
+[&quot;&quot;,“js”] 였던 코드들이 있는데 공백은 제거해줘야 된다.&lt;/li&gt;
+&lt;li&gt;json-loader 는 이제 안넣어줘도 된다. default 로 동작한다.&lt;/li&gt;
+&lt;li&gt;&lt;code class=&quot;language-text&quot;&gt;plugin&lt;/code&gt; 들도 다소 바뀐것들이 있는데 &lt;code class=&quot;language-text&quot;&gt;new webpack.optimize.DedupePlugin()&lt;/code&gt; 은 옵션으로 넣지 않아도 동작한다.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;module&lt;/code&gt; 옵션은 이렇게 사용한다.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;js&quot;&gt;&lt;pre class=&quot;language-js&quot;&gt;&lt;code class=&quot;language-js&quot;&gt;module&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+    rules&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+      test&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token regex&quot;&gt;/\.js$/&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;  &lt;span class=&quot;token comment&quot;&gt;//All .js files&lt;/span&gt;
+      exclude&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;path&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;resolve&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;__dirname&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;node_modules&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+      use&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;
+        &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+          loader&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;react-hot-loader&quot;&lt;/span&gt;
+        &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+          loader&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;babel-loader&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+          query&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+            presets&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&apos;react&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;es2015&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;stage-1&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;
+          &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+      &lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+  &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h3&gt;React router&lt;/h3&gt;
+&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;React router&lt;/code&gt; 가 4버전이 되면서 많은 것이 추가되거나 바꼈다.
+실제로 DOM 조작을 위한 라이브러리가 분리되면서 &lt;code class=&quot;language-text&quot;&gt;react-router-dom&lt;/code&gt; 을 사용해야 한다.
+이 부분이 상당히 애먹은 부분인데 몇시간이나 고민하고 찾아봤다. 같은 고민을 했던 많은 사람들이 Stackoverflow 에도 있었다.&lt;/p&gt;
+&lt;p&gt;알아둘점은 react-router 대신 react-router-dom 을 사용하는 것이고
+api 가 상당히 바꼈으므로 참고하면 된다.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;js&quot;&gt;&lt;pre class=&quot;language-js&quot;&gt;&lt;code class=&quot;language-js&quot;&gt;&lt;span class=&quot;token operator&quot;&gt;...&lt;/span&gt;생략
+&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; Route&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; IndexRoute &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;react-router&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;default&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;
+  &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;Route path&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;/&quot;&lt;/span&gt; component&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;App&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;
+    &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;IndexRoute component&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;Home&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;
+  &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;Route&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;이런 느낌으로 사용하던 것을 아래처럼 사용하면 되겠다.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;js&quot;&gt;&lt;pre class=&quot;language-js&quot;&gt;&lt;code class=&quot;language-js&quot;&gt;&lt;span class=&quot;token operator&quot;&gt;...&lt;/span&gt;생략
+&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; Route &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;react-router-dom&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;default&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;
+  &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;App&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;
+    &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;Route exact path&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;/&quot;&lt;/span&gt; component&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;Home&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;
+  &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;App&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</content:encoded></item><item><title><![CDATA[yum 을 이용해서 mssql 연결하기]]></title><description><![CDATA[리눅스에서 yum 으로 MSSQL 서버 연결하는 방법 yum 설치 tsql 을 이용해 접속해본다. 나오는방법은  unixODBC 세팅 아래 추가 odbc 이름 등록 아래 추가 나오는방법은 ^D…]]></description><link>https://monthlycode.dev/2016-02-15-connect-mssql-in-linux-using-yum/</link><guid isPermaLink="false">https://monthlycode.dev/2016-02-15-connect-mssql-in-linux-using-yum/</guid><pubDate>Mon, 15 Feb 2016 09:52:16 GMT</pubDate><content:encoded>&lt;p&gt;리눅스에서 yum 으로 MSSQL 서버 연결하는 방법&lt;/p&gt;
+&lt;h4&gt;yum 설치&lt;/h4&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# yum install freetds unixODBC&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h4&gt;tsql 을 이용해 접속해본다.&lt;/h4&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# tsql -S [아이피나 호스트명] -U [사용자아이디] -P [비밀번호]&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;나오는방법은 &lt;code class=&quot;language-text&quot;&gt;^D&lt;/code&gt;&lt;/p&gt;
+&lt;h4&gt;unixODBC 세팅&lt;/h4&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# vi /etc/odbcinst.ini&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;아래 추가&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;ini&quot;&gt;&lt;pre class=&quot;language-ini&quot;&gt;&lt;code class=&quot;language-ini&quot;&gt;&lt;span class=&quot;token selector&quot;&gt;[FreeTDS]&lt;/span&gt;
+&lt;span class=&quot;token constant&quot;&gt;Description&lt;/span&gt; &lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt; FreeTDS Driver&lt;/span&gt;
+&lt;span class=&quot;token constant&quot;&gt;Driver&lt;/span&gt; &lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt; /usr/lib64/libtdsodbc.so.0&lt;/span&gt;
+&lt;span class=&quot;token constant&quot;&gt;Setup&lt;/span&gt; &lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt; /usr/lib64/libtdsS.so.2&lt;/span&gt;
+&lt;span class=&quot;token constant&quot;&gt;FileUsage&lt;/span&gt; &lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt; 1&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h4&gt;odbc 이름 등록&lt;/h4&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# vi /etc/odbc.ini&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;아래 추가&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;ini&quot;&gt;&lt;pre class=&quot;language-ini&quot;&gt;&lt;code class=&quot;language-ini&quot;&gt;&lt;span class=&quot;token selector&quot;&gt;[MYDSN]&lt;/span&gt;
+&lt;span class=&quot;token constant&quot;&gt;Driver&lt;/span&gt; &lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt; FreeTDS&lt;/span&gt;
+&lt;span class=&quot;token constant&quot;&gt;Server&lt;/span&gt; &lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt; [IP address]&lt;/span&gt;
+&lt;span class=&quot;token constant&quot;&gt;Port&lt;/span&gt; &lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt; 1433&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# isql MYDSN [사용자아이디][비밀번호] -v&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;나오는방법은 ^D&lt;/p&gt;
+&lt;p&gt;끝!&lt;/p&gt;
+&lt;p&gt;— 위처럼 하면 한글이 깨진다 !&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# vi /etc/freetds&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;아래 추가&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;ini&quot;&gt;&lt;pre class=&quot;language-ini&quot;&gt;&lt;code class=&quot;language-ini&quot;&gt;&lt;span class=&quot;token selector&quot;&gt;[서버네임]&lt;/span&gt;
+&lt;span class=&quot;token constant&quot;&gt;host&lt;/span&gt; &lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt; IP address&lt;/span&gt;
+&lt;span class=&quot;token constant&quot;&gt;port&lt;/span&gt; &lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt; 1433&lt;/span&gt;
+tds version &lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt; 7.0&lt;/span&gt;
+client charset &lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt; UTF-8&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# vi /etc/odbc.ini&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;MYDSN&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;
+Driver &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; FreeTDS
+Servername &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; 서버네임
+Database &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; DB이름&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;이렇게 하면 한글이 깨지지 않는다 !!&lt;/p&gt;</content:encoded></item><item><title><![CDATA[각 DB 에서 LIMIT 구현하기]]></title><description><![CDATA[LIMIT 구현]]></description><link>https://monthlycode.dev/2016-02-15-limit-in-each-databases/</link><guid isPermaLink="false">https://monthlycode.dev/2016-02-15-limit-in-each-databases/</guid><pubDate>Mon, 15 Feb 2016 06:39:33 GMT</pubDate><content:encoded>&lt;p&gt;LIMIT 구현&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;sql&quot;&gt;&lt;pre class=&quot;language-sql&quot;&gt;&lt;code class=&quot;language-sql&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;-- DB2&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;select&lt;/span&gt; _ &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;table&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;fetch&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;first&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;10&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;rows&lt;/span&gt; only
+&lt;span class=&quot;token comment&quot;&gt;-- Informix&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;select&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;first&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;10&lt;/span&gt; _ &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;table&lt;/span&gt;
+&lt;span class=&quot;token comment&quot;&gt;-- Microsoft SQL Server and Access&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;select&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;top&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;10&lt;/span&gt; _ &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;table&lt;/span&gt;
+&lt;span class=&quot;token comment&quot;&gt;-- MySQL and PostgreSQL&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;select&lt;/span&gt; _ &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;table&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;limit&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;10&lt;/span&gt;
+&lt;span class=&quot;token comment&quot;&gt;-- Oracle&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;select&lt;/span&gt; _ &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;select&lt;/span&gt; _ &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;table&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;where&lt;/span&gt; rownum &lt;span class=&quot;token operator&quot;&gt;&amp;lt;=&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;10&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</content:encoded></item><item><title><![CDATA[/etc/messages 에서 out of memory 가 일어나서 프로세스가 종료될 때]]></title><description><![CDATA[해당 방법은 http://cafe.naver.com/opensourcesw/583 에서 확인한 글입니다. 메모리관련 메커니즘을 수정해서 out of memory 를 줄이는 방법입니다.
+Linux…]]></description><link>https://monthlycode.dev/2015-12-04-out-of-memory-on-linux/</link><guid isPermaLink="false">https://monthlycode.dev/2015-12-04-out-of-memory-on-linux/</guid><pubDate>Fri, 04 Dec 2015 07:51:36 GMT</pubDate><content:encoded>&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;Dec  4 11:16:02 localhost kernel: Call Trace:
+Dec  4 11:16:02 localhost kernel: [&amp;lt;ffffffff810d0361&amp;gt;] ? cpuset_print_task_mems_allowed+0x91/0xb0
+Dec  4 11:16:02 localhost kernel: [&amp;lt;ffffffff81122730&amp;gt;] ? dump_header+0x90/0x1b0
+Dec  4 11:16:02 localhost kernel: [&amp;lt;ffffffff812282fc&amp;gt;] ? security_real_capable_noaudit+0x3c/0x70
+Dec  4 11:16:02 localhost kernel: [&amp;lt;ffffffff81122bb2&amp;gt;] ? oom_kill_process+0x82/0x2a0
+Dec  4 11:16:02 localhost kernel: [&amp;lt;ffffffff81122af1&amp;gt;] ? select_bad_process+0xe1/0x120
+Dec  4 11:16:02 localhost kernel: [&amp;lt;ffffffff81122ff0&amp;gt;] ? out_of_memory+0x220/0x3c0
+Dec  4 11:16:02 localhost kernel: [&amp;lt;ffffffff8112f90f&amp;gt;] ? __alloc_pages_nodemask+0x89f/0x8d0
+Dec  4 11:16:02 localhost kernel: [&amp;lt;ffffffff8116789a&amp;gt;] ? alloc_pages_current+0xaa/0x110
+Dec  4 11:16:02 localhost kernel: [&amp;lt;ffffffff8111fb27&amp;gt;] ? __page_cache_alloc+0x87/0x90
+Dec  4 11:16:02 localhost kernel: [&amp;lt;ffffffff8111f50e&amp;gt;] ? find_get_page+0x1e/0xa0
+Dec  4 11:16:02 localhost kernel: [&amp;lt;ffffffff81120ac7&amp;gt;] ? filemap_fault+0x1a7/0x500
+Dec  4 11:16:02 localhost kernel: [&amp;lt;ffffffff81149e04&amp;gt;] ? __do_fault+0x54/0x530
+Dec  4 11:16:02 localhost kernel: [&amp;lt;ffffffff8114a3d7&amp;gt;] ? handle_pte_fault+0xf7/0xb00
+Dec  4 11:16:02 localhost kernel: [&amp;lt;ffffffff81528e4e&amp;gt;] ? thread_return+0x4e/0x770
+Dec  4 11:16:02 localhost kernel: [&amp;lt;ffffffff810a6d31&amp;gt;] ? ktime_get_ts+0xb1/0xf0
+Dec  4 11:16:02 localhost kernel: [&amp;lt;ffffffff81083e1c&amp;gt;] ? lock_timer_base+0x3c/0x70
+Dec  4 11:16:02 localhost kernel: [&amp;lt;ffffffff8114b00a&amp;gt;] ? handle_mm_fault+0x22a/0x300
+Dec  4 11:16:02 localhost kernel: [&amp;lt;ffffffff81084aa2&amp;gt;] ? del_timer_sync+0x22/0x30
+Dec  4 11:16:02 localhost kernel: [&amp;lt;ffffffff8104a8d8&amp;gt;] ? __do_page_fault+0x138/0x480
+Dec  4 11:16:02 localhost kernel: [&amp;lt;ffffffff81061d00&amp;gt;] ? default_wake_function+0x0/0x20
+Dec  4 11:16:02 localhost kernel: [&amp;lt;ffffffffa00b5938&amp;gt;] ? jbd2_complete_transaction+0x68/0xb0 [jbd2]
+Dec  4 11:16:02 localhost kernel: [&amp;lt;ffffffff811d6770&amp;gt;] ? timeout_func+0x0/0x20
+Dec  4 11:16:02 localhost kernel: [&amp;lt;ffffffff8152e99e&amp;gt;] ? do_page_fault+0x3e/0xa0
+Dec  4 11:16:02 localhost kernel: [&amp;lt;ffffffff8152bd55&amp;gt;] ? page_fault+0x25/0x30&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;해당 방법은 &lt;a href=&quot;http://cafe.naver.com/opensourcesw/583&quot;&gt;http://cafe.naver.com/opensourcesw/583&lt;/a&gt; 에서 확인한 글입니다.&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;메모리관련 메커니즘을 수정해서 out of memory 를 줄이는 방법입니다.
+Linux의 메모리 관리에서는 메모리 오버커밋이라는 메커니즘이 적용되어 있어 실제 메모리 이상의 공간을 확보할 수 있습니다.
+이는 어떤 문제를 야기시킬 수 있는가 하면 Linux 가상 메모리 시스템은 프로세스가 메모리를 확보할 때는 많게 보이게 하고 실제로 프로세스가 메모리에 접근을 하게되면 실제 메모리를 할당하는데 이때 실제 메모리가 부족하게 되면 OS내부적으로 프로세스를 마음대로 kill을 해버리는데 이걸 OOM-killer(out of memory killer)라고 합니다.&lt;/p&gt;
+&lt;p&gt;OOM Killer는 시스템이 실제 메모리와 가상 메모리 공간(스왑)을 다 사용해, 필요한 메모리 공간을 새로 확보 할 수 없는 경우 프로세스를 종료시켜 여유메모리를 확보하는 리눅스 커널의 메커니즘 중에 하나입니다.
+그래서 kill된 프로세스가 자기가 왜 죽어버리는지 알수 없는 인터럽트가 발생해서 자신이 인터럽트가 발생했을 때 예외처리를 수행하지 못하는 문제가 발생합니다.&lt;/p&gt;
+&lt;p&gt;이런현상이 데이터를 관리하는 DB서버에서 발생한다면 리눅스의 좋은 메커니즘이라도 고객의 인지 정보가 실제 데이터에는 저장되지 않는 데이터 유실을 유발시킬 수 있습니다. 그러므로 강제로 kill을 통한 메모리 확보가 아닌 DB자체가 메모리 부족을 인지하고 예외처리하는 로직을 태우게 OS환경을 만들어줄 필요가 있습니다.&lt;/p&gt;
+&lt;p&gt;관련 커널 매개변수 정보
+&lt;code class=&quot;language-text&quot;&gt;vm.overcommit_memory&lt;/code&gt;
+0 : heuristic에 따라 overcommit 할 수 있고, 하지 않을 수도 있다.(default)
+메모리 요구가 있을 때 여유공간이 없는 경우 실행중인 프로세스를 강제 종료 메모리를 억지로 확보함.
+1 : 항상 overcommit 함. 메모리를 다 사용했는데도 충분한 메모리가 있는것처럼 처리됨. 그외에는 0과 같음.
+무조건적으로 메모리 요청을 허용해주는 것으로서 OOM Killer가 가장 잘 발생될 수 있는 환경
+2 : overcommit 하지 않음.
+메모리가 부족할 경우 메모리 확보시 에러발생시킴 [Swap size] + ([RAM size} * vm.overcommit_ratio/100).
+실제로 사용하지 않고 있다 하더라도 물리적인 메모리가 허용되는 한도에서만 메모리 할당 요청을 받아주는 형태.&lt;/p&gt;
+&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;vm.overcommit_ratio&lt;/code&gt;
+사용 가능한 메모리의 백분율로 정의. overcommit_ratio의 디폴트는 50&lt;/p&gt;
+&lt;p&gt;centos command
+/etc/sysctl.conf&lt;/p&gt;
+&lt;p&gt;vm.overcommit&lt;em&gt;memory = 2
+vm.overcommit&lt;/em&gt;ratio = 100&lt;/p&gt;
+&lt;p&gt;적용은 sysctl -p&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;여기까지 원글쓴이의 글이다.&lt;/p&gt;
+&lt;p&gt;만약 레이쇼를 적용하지 못한상태로 적용하게된다면…&lt;/p&gt;
+&lt;p&gt;bash 조차 먹히지 않는 상황이 발생할 수있다&lt;/p&gt;
+&lt;p&gt;그럴땐 원격으로 mysqladmin -h(호스트) -uroot -p shutdown 을 입력한다.&lt;/p&gt;
+&lt;p&gt;참고 kill 우선순위&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;http://unix.stackexchange.com/a/128667&quot;&gt;http://unix.stackexchange.com/a/128667&lt;/a&gt;&lt;/p&gt;</content:encoded></item><item><title><![CDATA[REDIS 관련 에러]]></title><description><![CDATA[redis 설치하는 법도 아직 포스팅 하기 전이지만 일단 오류 해결방법에 대해 메모 한다. Increased maximum number of open files to 10032 (it was originally set to 409…]]></description><link>https://monthlycode.dev/2015-10-29-some-redis-error/</link><guid isPermaLink="false">https://monthlycode.dev/2015-10-29-some-redis-error/</guid><pubDate>Thu, 29 Oct 2015 02:19:18 GMT</pubDate><content:encoded>&lt;p&gt;redis 설치하는 법도 아직 포스팅 하기 전이지만&lt;/p&gt;
+&lt;p&gt;일단 오류 해결방법에 대해 메모 한다.&lt;/p&gt;
+&lt;p&gt;Increased maximum number of open files to 10032 (it was originally set to 4096).&lt;/p&gt;
+&lt;p&gt;해당 오류가 뜨게 된다면&lt;/p&gt;
+&lt;p&gt;redis 가 설정하려고 하는 파일 갯수를 줄이거나
+시스템의 오픈가능 파일갯수를 늘리거나 둘중하나를 하면된다.&lt;/p&gt;
+&lt;p&gt;시스템 오픈가능 파일은&lt;/p&gt;
+&lt;p&gt;unlimit -n 으로 확인 가능하다.&lt;/p&gt;
+&lt;p&gt;redis.conf 에서 maxclients 옵션을 1024로 변경후 재시작.(테스트 서버니까 1024로도 충분하다.)&lt;/p&gt;</content:encoded></item><item><title><![CDATA[CentOS에 vsftpd(ftp) 설치하기]]></title><description><![CDATA[ssh 를 통해 기본적으로 접속을 할 수 있지만 ftp 를 이용하여 제한적으로 폴더를 이용할 수 있도록 할 수 있다.
+포트변경과 폴더제한까지 하는방법을 알아보자. 설치 yum install vsftpd 세팅 vi /etc/vsftpd/vsftpd…]]></description><link>https://monthlycode.dev/2015-08-19-install-vsftpd-in-centos/</link><guid isPermaLink="false">https://monthlycode.dev/2015-08-19-install-vsftpd-in-centos/</guid><pubDate>Wed, 19 Aug 2015 09:57:48 GMT</pubDate><content:encoded>&lt;p&gt;ssh 를 통해 기본적으로 접속을 할 수 있지만&lt;/p&gt;
+&lt;p&gt;ftp 를 이용하여 제한적으로 폴더를 이용할 수 있도록 할 수 있다.
+포트변경과 폴더제한까지 하는방법을 알아보자.&lt;/p&gt;
+&lt;h4&gt;설치&lt;/h4&gt;
+&lt;h1&gt;yum install vsftpd&lt;/h1&gt;
+&lt;h4&gt;세팅&lt;/h4&gt;
+&lt;h1&gt;vi /etc/vsftpd/vsftpd.conf&lt;/h1&gt;
+&lt;p&gt;설정파일 중에
+&lt;code class=&quot;language-text&quot;&gt;chroot_local_user=YES&lt;/code&gt; 의 주석을 풀어주고
+아래 내용을 추가한다.&lt;/p&gt;
+&lt;p&gt;원래 21번 포트로 받는것을 xxx 로 변경한다.
+: &lt;code class=&quot;language-text&quot;&gt;listen_port=xxx&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;접속하자마자 보이는 루트를 해당 경로의 public&lt;em&gt;html 로 제한한다.
+: `local&lt;/em&gt;root=./public_html`&lt;/p&gt;
+&lt;p&gt;패시브모드 선택시 아래처럼 해준다.
+&lt;code class=&quot;language-text&quot;&gt;pasv_enable=YES&lt;/code&gt;
+&lt;code class=&quot;language-text&quot;&gt;pasv_promiscuous=YES&lt;/code&gt;
+&lt;code class=&quot;language-text&quot;&gt;pasv_min_port=10090&lt;/code&gt;
+&lt;code class=&quot;language-text&quot;&gt;pasv_max_port=10100&lt;/code&gt;&lt;/p&gt;
+&lt;h4&gt;방화벽&lt;/h4&gt;
+&lt;p&gt;위에서 바꾼 xxx 포트를 열어주고, 패시브모드를 위한 포트도 열어준다.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# iptables -A INPUT -p tcp -m state --state NEW -m tcp --dport xxx -j ACCEPT&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# iptables -A INPUT -p tcp -m state --state NEW -m tcp --dport 10090:10100 -j ACCEPT&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# service iptables save&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# service iptables restart&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;잘 추가되었는지 확인하려면&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1&gt;cat /etc/sysconfig/iptables&lt;/h1&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;#### 실행
+
+```bash
+
+# service vsftpd start&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;접속해본다&lt;/p&gt;
+&lt;p&gt;끗!&lt;/p&gt;</content:encoded></item><item><title><![CDATA[TABLE 에서 일부 셀만 고정시키기]]></title><description><![CDATA[가로폭이 고정인 테이블을 고정시키는 방법은 간단하다. 하지만 내용이 길어질 경우 글자가 잘리는 경우가 발생 아래처럼 처리해주는 방법도 있다. 이른바 ”…” 하지만 꼭 글자를 표시해줄 일이 있고 특정열만 고정시키고 싶다면 이렇게하자]]></description><link>https://monthlycode.dev/2015-07-30-fix-some-cells-in-table/</link><guid isPermaLink="false">https://monthlycode.dev/2015-07-30-fix-some-cells-in-table/</guid><pubDate>Thu, 30 Jul 2015 01:56:52 GMT</pubDate><content:encoded>&lt;p&gt;가로폭이 고정인 테이블을 고정시키는 방법은 간단하다.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;css&quot;&gt;&lt;pre class=&quot;language-css&quot;&gt;&lt;code class=&quot;language-css&quot;&gt;&lt;span class=&quot;token selector&quot;&gt;table&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;token property&quot;&gt;table-layout&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; fixed&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;하지만 내용이 길어질 경우 글자가 잘리는 경우가 발생 아래처럼 처리해주는 방법도 있다. 이른바 ”…”&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;css&quot;&gt;&lt;pre class=&quot;language-css&quot;&gt;&lt;code class=&quot;language-css&quot;&gt;&lt;span class=&quot;token selector&quot;&gt;table &gt; tbody &gt; tr &gt; td&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;token property&quot;&gt;text-overflow&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; ellipsis&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;token property&quot;&gt;overflow&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; hidden&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;token property&quot;&gt;white-space&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; nowrap&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;하지만 꼭 글자를 표시해줄 일이 있고 특정열만 고정시키고 싶다면&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;css&quot;&gt;&lt;pre class=&quot;language-css&quot;&gt;&lt;code class=&quot;language-css&quot;&gt;&lt;span class=&quot;token selector&quot;&gt;table&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;token property&quot;&gt;table-layout&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; auto&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;token selector&quot;&gt;table &gt; tbody &gt; tr &gt; td&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;token property&quot;&gt;min-width&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; 100px&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;이렇게하자&lt;/p&gt;</content:encoded></item><item><title><![CDATA[MariaDB 에서 시퀀스엔진 사용하기]]></title><description><![CDATA[전용뷰어 보기
+MariaDB 스토리지 엔진중에 아주 쓸만한 시퀀스 엔진이 있다. 간단하게 설명하면 그냥 숫자 쭉 나열해주는 기능이다. 상황에 따라 oracle 의 rownum 처럼 쓸수도 있고
+join 하여 날짜를 카운팅 할 수 있다. 특정 텀으로…]]></description><link>https://monthlycode.dev/2015-04-08-sequence-engine-in-mariadb/</link><guid isPermaLink="false">https://monthlycode.dev/2015-04-08-sequence-engine-in-mariadb/</guid><pubDate>Wed, 08 Apr 2015 07:36:46 GMT</pubDate><content:encoded>&lt;p&gt;전용뷰어 보기
+MariaDB 스토리지 엔진중에 아주 쓸만한 시퀀스 엔진이 있다.&lt;/p&gt;
+&lt;p&gt;간단하게 설명하면 그냥 숫자 쭉 나열해주는 기능이다.&lt;/p&gt;
+&lt;p&gt;상황에 따라 oracle 의 rownum 처럼 쓸수도 있고
+join 하여 날짜를 카운팅 할 수 있다. 특정 텀으로 1주일씩 계산하는것도 가능하다.&lt;/p&gt;
+&lt;p&gt;설치는 아래와 같이 쿼리를 날려주면 된다.(MariaDB 10.0.x 이상)&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;sql&quot;&gt;&lt;pre class=&quot;language-sql&quot;&gt;&lt;code class=&quot;language-sql&quot;&gt;INSTALL PLUGIN sequence &lt;span class=&quot;token keyword&quot;&gt;SONAME&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;ha_sequence&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;사용방법은&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;sql&quot;&gt;&lt;pre class=&quot;language-sql&quot;&gt;&lt;code class=&quot;language-sql&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;select&lt;/span&gt; seq &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; seq_x_to_y_step_z&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;x 부터 y까지 z간격으로 임시테이블을 생성해준다.&lt;/p&gt;
+&lt;p&gt;사용예제는 아래와 같다.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;sql&quot;&gt;&lt;pre class=&quot;language-sql&quot;&gt;&lt;code class=&quot;language-sql&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;select&lt;/span&gt; seq&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;DATE_ADD&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&apos;2015-04-08&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;INTERVAL&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;seq&lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;\&lt;span class=&quot;token operator&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;7&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;DAY&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;as&lt;/span&gt; seq_date
+&lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; seq_1_to_5_step_1&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;특정 날짜 기준으로 지난주 지지난주 등을 쉽게 구할 수 있다 :)&lt;/p&gt;</content:encoded></item><item><title><![CDATA[PHP 에서 mkdir 같은 커맨드를 사용할 때 권한 문제]]></title><description><![CDATA[php 에서 mkdir 이나 chmod 등 권한을 필요로 하는 명령어를 입력하려고 하면 안될때가 종종 있다. 그럴때 현재 php 가 어떤사용자로 돌아가고 있는지 확인 후 소유자를 바꿔주면 된다. 아니면 그냥 77…]]></description><link>https://monthlycode.dev/2014-08-25-phpauthorityproblemwithsomecommands/</link><guid isPermaLink="false">https://monthlycode.dev/2014-08-25-phpauthorityproblemwithsomecommands/</guid><pubDate>Mon, 25 Aug 2014 02:32:57 GMT</pubDate><content:encoded>&lt;p&gt;php 에서 mkdir 이나 chmod 등 권한을 필요로 하는 명령어를 입력하려고 하면 안될때가 종종 있다.&lt;/p&gt;
+&lt;p&gt;그럴때 현재 php 가 어떤사용자로 돌아가고 있는지 확인 후 소유자를 바꿔주면 된다.&lt;/p&gt;
+&lt;p&gt;아니면 그냥 777권한을 주자 .&lt;/p&gt;
+&lt;p&gt;현재 프로세스 사용자 확인 :&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;php&quot;&gt;&lt;pre class=&quot;language-php&quot;&gt;&lt;code class=&quot;language-php&quot;&gt;&lt;span class=&quot;token variable&quot;&gt;$processUser&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;posix_getpwuid&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;posix_geteuid&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+ &lt;span class=&quot;token keyword&quot;&gt;echo&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token variable&quot;&gt;$processUser&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token single-quoted-string string&quot;&gt;&apos;name&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</content:encoded></item><item><title><![CDATA[Nginx http 에서 https로 리다이렉트 시키기]]></title><description><![CDATA[간단하게 아래처럼 써준다.]]></description><link>https://monthlycode.dev/2014-01-02-redirect-http-to-https-on-nginx/</link><guid isPermaLink="false">https://monthlycode.dev/2014-01-02-redirect-http-to-https-on-nginx/</guid><pubDate>Thu, 02 Jan 2014 04:42:30 GMT</pubDate><content:encoded>&lt;p&gt;간단하게 아래처럼 써준다.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;conf&quot;&gt;&lt;pre class=&quot;language-conf&quot;&gt;&lt;code class=&quot;language-conf&quot;&gt;server {
+listen 1.2.3.4:80 default;
+server_name example.com www.example.com; ## redirect http to https ##
+rewrite ^ https://$server_name$request_uri? permanent;
+}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</content:encoded></item><item><title><![CDATA[vi 에서 여러줄 주석 처리하기]]></title><description><![CDATA[주석처리를 하고자 하는 부분을 비주얼모드에서 블럭을 지정하여 사용하면 된다.
+비주얼모드: ctrl +v 라인을 지정한 상태에서
+주석 처리시 주석 해제시 예)]]></description><link>https://monthlycode.dev/2014-01-02-comment-out-in-vi-editor/</link><guid isPermaLink="false">https://monthlycode.dev/2014-01-02-comment-out-in-vi-editor/</guid><pubDate>Thu, 02 Jan 2014 04:40:09 GMT</pubDate><content:encoded>&lt;p&gt;주석처리를 하고자 하는 부분을 비주얼모드에서 블럭을 지정하여 사용하면 된다.
+비주얼모드: [ctrl] +v&lt;/p&gt;
+&lt;p&gt;라인을 지정한 상태에서
+주석 처리시&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;: norm i#&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;주석 해제시&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;: norm xx&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;예)&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt; :norm 2x&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</content:encoded></item><item><title><![CDATA[CentOS 에서 커널 업데이트 할 때 생기는 문제]]></title><description><![CDATA[전용뷰어 보기
+리눅스 설치 파티션 나누는 것들 검색해보면 대부분 boot 를 100메가만줘도 된다고한다.
+그런데 요새 하드나 ssd 나 용량도 많은데 한 200M 300M 줘도 상관없을거같은데. 결국 우리서버도 boot 파티션 용량이 100M…]]></description><link>https://monthlycode.dev/2013-09-02-kernel-update-problem-on-centos/</link><guid isPermaLink="false">https://monthlycode.dev/2013-09-02-kernel-update-problem-on-centos/</guid><pubDate>Mon, 02 Sep 2013 01:54:04 GMT</pubDate><content:encoded>&lt;p&gt;전용뷰어 보기
+리눅스 설치 파티션 나누는 것들 검색해보면 대부분 boot 를 100메가만줘도 된다고한다.
+그런데 요새 하드나 ssd 나 용량도 많은데 한 200M 300M 줘도 상관없을거같은데.&lt;/p&gt;
+&lt;p&gt;결국 우리서버도 boot 파티션 용량이 100M 이다
+그런데 yum 업데이트하려니 용량이 부족하다고 한다.&lt;/p&gt;
+&lt;p&gt;해결은 크게 2가지 방법이있다.&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;업데이트를 안하게 설정을 바꾼다.&lt;/li&gt;
+&lt;li&gt;현재설치되있는것빼고 나머지 지우고 설치를 진행한다.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;2번을 권장한다.&lt;/p&gt;
+&lt;p&gt;1번&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;/etc/yum.conf 를 수정한다.
+ exclude=kernel*&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;2번&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;/etc/yum.conf 에 아래부분을 수정.
+installonly_limit=5 -&amp;gt; installonly_limit=2&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;그리고 안쓰는 rpm 을 지운다.
+현재 사용중인 커널확인&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# uname -a&lt;/span&gt;
+
+--현재 사용중인 커널확인
+
+&lt;span class=&quot;token comment&quot;&gt;# uname -a&lt;/span&gt;
+
+--boot 에 있는 파일 확인 후 안쓰는것 삭제.
+
+&lt;span class=&quot;token comment&quot;&gt;# rpm -e kernel-2.6.32-71.el6.x86_64 kernel-2.6.32-71.29.1.el6.x86_64&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# yum update kernel&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# reboot&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</content:encoded></item><item><title><![CDATA[change encoding on centos]]></title><description><![CDATA[관리자권한으로
+euc-kr -> utf8 로 바꾸기. EUC-KR 로 생성되있던 파일 utf8로 바꾸기.]]></description><link>https://monthlycode.dev/2013-08-21-change-encoding-on-centos/</link><guid isPermaLink="false">https://monthlycode.dev/2013-08-21-change-encoding-on-centos/</guid><pubDate>Wed, 21 Aug 2013 06:01:20 GMT</pubDate><content:encoded>&lt;p&gt;관리자권한으로
+euc-kr -&gt; utf8 로 바꾸기.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# echo \$LANG&lt;/span&gt;
+
+ko_KR.EUC-KR
+
+&lt;span class=&quot;token comment&quot;&gt;# vi /etc/sysconfig/i18n&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token assign-left variable&quot;&gt;&lt;span class=&quot;token environment constant&quot;&gt;LANG&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;ko_KR.EUC-KR&quot;&lt;/span&gt; 아래처럼변경
+&lt;span class=&quot;token assign-left variable&quot;&gt;&lt;span class=&quot;token environment constant&quot;&gt;LANG&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;ko_KR.utf8&quot;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# source /etc/sysconfig/i18n&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;EUC-KR 로 생성되있던 파일 utf8로 바꾸기.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# iconv -f=EUC-KR -t=utf8 파일명&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</content:encoded></item><item><title><![CDATA[심볼릭 링크 생성하고 권한 주기]]></title><description><![CDATA[우리같은경우 심볼릭링크를 쓰는경우가 /home 은 SSD 를 쓰고 있는데 그밖에 백업할 데이터들은 HDD…]]></description><link>https://monthlycode.dev/2013-08-12-add-and-authorize-symbolic-links/</link><guid isPermaLink="false">https://monthlycode.dev/2013-08-12-add-and-authorize-symbolic-links/</guid><pubDate>Mon, 12 Aug 2013 04:34:58 GMT</pubDate><content:encoded>&lt;p&gt;우리같은경우 심볼릭링크를 쓰는경우가 /home 은 SSD 를 쓰고 있는데 그밖에 백업할 데이터들은 HDD 에 보관하고 있다.
+프로그램내에서 각각 관리자들이 백업을 복구해줄수 있어야 하기 때문에 해당 폴더안에 십볼릭 링크를 만들어주었다.&lt;/p&gt;
+&lt;p&gt;심볼릭 링크 생성&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# ln -s [타겟위치][심볼릭 링크 이름]&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;권한 바꿔주기&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# chown -h 사용자:그룹 [심볼릭 링크 이름]&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;간단하게 -h 옵션만 붙여주면 된다.&lt;/p&gt;
+&lt;p&gt;의외로 구글에서도 찾기 힘들었다.&lt;/p&gt;</content:encoded></item><item><title><![CDATA[MySql 에서 암호화 복호화 참고]]></title><description><![CDATA[자세한 설명은 생략한다.]]></description><link>https://monthlycode.dev/2013-08-07-encryption-and-decryption-in-mysql/</link><guid isPermaLink="false">https://monthlycode.dev/2013-08-07-encryption-and-decryption-in-mysql/</guid><pubDate>Wed, 07 Aug 2013 02:02:09 GMT</pubDate><content:encoded>&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;sql&quot;&gt;&lt;pre class=&quot;language-sql&quot;&gt;&lt;code class=&quot;language-sql&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;-- 암호화&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;insert&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;into&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;table&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;pass&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;values&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;HEX&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;AES_ENCRYPT&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&apos;암호&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&apos;key&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token comment&quot;&gt;-- 복호화&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;select&lt;/span&gt; AES_DECRYPT&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;UNHEX&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;pass&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&apos;key&apos;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;자세한 설명은 생략한다.&lt;/p&gt;</content:encoded></item><item><title><![CDATA[jailkit로 sftp 사용할 때 root 접근 못하게 하기]]></title><description><![CDATA[전용뷰어 보기
+기존에 ftp 쓸때는 해당 폴더외에 접근허용이 안된다.
+하지만 sftp로 접속하면 어떤 유저도 / 까지도 볼 수 있게된다. jailkit 은 그걸 막아준다.
+sshd5.x 부터는 chroot 로도 가능한데.…]]></description><link>https://monthlycode.dev/2013-07-18-jailkit-prevent-connection-root-directories-using-sftp/</link><guid isPermaLink="false">https://monthlycode.dev/2013-07-18-jailkit-prevent-connection-root-directories-using-sftp/</guid><pubDate>Thu, 18 Jul 2013 05:45:04 GMT</pubDate><content:encoded>&lt;p&gt;전용뷰어 보기
+기존에 ftp 쓸때는 해당 폴더외에 접근허용이 안된다.
+하지만 sftp로 접속하면 어떤 유저도 / 까지도 볼 수 있게된다.&lt;/p&gt;
+&lt;p&gt;jailkit 은 그걸 막아준다.
+sshd5.x 부터는 chroot 로도 가능한데. 3시간동안 해봐도 안되길래 그냥 이걸로했다. 쉽고 편하고 빠르다.&lt;/p&gt;
+&lt;p&gt;CentOS 6.3 기준 설치방법&lt;/p&gt;
+&lt;p&gt;저장소를 추가하고 다음과 같이 간단하게 설치해준다.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# wget http://apt.sw.be/redhat/el6/en/x86_64/rpmforge/RPMS/rpmforge-release-0.5.3-1.el6.rf.x86_64.rpm&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# rpm -Uvh rpmforge-release\*rpm&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# yum install jailkit&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;이제 사용자를 추가해서 막아보자.
+/home/jail 은 가둬둘 곳.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# jk_init -v -j /home/jail sftp scp jk_lsh&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# adduser user_name; passwd user_name&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# jk_jailuser -m -j /home/jail user_name&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# vi /home/jail/etc/jailkit/jk_lsh.ini&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;아래 내용 추가.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;ini&quot;&gt;&lt;pre class=&quot;language-ini&quot;&gt;&lt;code class=&quot;language-ini&quot;&gt;&lt;span class=&quot;token selector&quot;&gt;[user_name]&lt;/span&gt;
+&lt;span class=&quot;token constant&quot;&gt;paths&lt;/span&gt; &lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt; /usr/libexec/openssh/&lt;/span&gt;
+&lt;span class=&quot;token constant&quot;&gt;executables&lt;/span&gt; &lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt; /usr/libesec/openssh/sftp-server&lt;/span&gt;
+&lt;span class=&quot;token constant&quot;&gt;allow_word_expansion&lt;/span&gt; &lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt; 0&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# sftp user_name@localhost&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;sftp&gt; 라고 나오면 성공이다 !&lt;/p&gt;
+&lt;p&gt;jailkit 이 해주는 일은 cp ls 같은걸 실행할 수 있도록 관련 라이브러리 복사 등등인것 같다.&lt;/p&gt;</content:encoded></item><item><title><![CDATA[HTML페이지 인쇄 시 여백 제어하기]]></title><description><![CDATA[전용뷰어 보기
+프린트하는 곳들 보면 거의다 activeX 로 익스플로러 브라우저 접근해서 강제로 조절하는데
+IE 8 이상부터, 크롬 및 다른 브라우저들은 이렇게 여백컨트롤 할수 있다. size 는 IE 에서 안된다. activex…]]></description><link>https://monthlycode.dev/2013-07-13-control-space-in-print-html-pages/</link><guid isPermaLink="false">https://monthlycode.dev/2013-07-13-control-space-in-print-html-pages/</guid><pubDate>Sat, 13 Jul 2013 05:47:53 GMT</pubDate><content:encoded>&lt;p&gt;전용뷰어 보기
+프린트하는 곳들 보면 거의다 activeX 로 익스플로러 브라우저 접근해서 강제로 조절하는데
+IE 8 이상부터, 크롬 및 다른 브라우저들은 이렇게 여백컨트롤 할수 있다.&lt;/p&gt;
+&lt;p&gt;size 는 IE 에서 안된다. activex 하나하나 없애가자 ~!&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;css&quot;&gt;&lt;pre class=&quot;language-css&quot;&gt;&lt;code class=&quot;language-css&quot;&gt;&lt;span class=&quot;token atrule&quot;&gt;&lt;span class=&quot;token rule&quot;&gt;@page&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;token property&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; auto&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+  /_auto is the initial value _/
+
+    &lt;span class=&quot;token comment&quot;&gt;/* this affects the margin in the printer settings */&lt;/span&gt;
+    &lt;span class=&quot;token property&quot;&gt;margin&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; 25mm 25mm 25mm 25mm&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</content:encoded></item><item><title><![CDATA[EGit과 JGit의 차이]]></title><description><![CDATA[알고보면 너무 간단한데 역시 네이버에서는 검색하기가 어렵다.. 이클립스 커뮤니티 포럼에 좋은 댓글이 있어서 퍼왔다. JGit 은 자바 구현체,라이브러리 즉 java 로 git을 이것저것 할수있다.
+EGit 은 이클립스에서 git…]]></description><link>https://monthlycode.dev/2013-05-02-differencewithegitandjgit/</link><guid isPermaLink="false">https://monthlycode.dev/2013-05-02-differencewithegitandjgit/</guid><pubDate>Wed, 01 May 2013 23:58:33 GMT</pubDate><content:encoded>&lt;p&gt;알고보면 너무 간단한데 역시 네이버에서는 검색하기가 어렵다..&lt;/p&gt;
+&lt;p&gt;이클립스 커뮤니티 포럼에 좋은 댓글이 있어서 퍼왔다.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;Manuel Doninger wrote on Thu, 05 January 2012 04:38
+JGit is the Java implementation of Git. It is a library, that also can be used in your own applications. It also provides some sort of CLI operations.
+EGit on the other side is the Eclipse team provider plugin for Git, which uses JGit as Git implementation. Simplified you could say EGit is the UI part, and JGit the background part.
+JGit doesn&amp;#39;t depend on EGit, but EGit does depend on JGit.&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;JGit 은 자바 구현체,라이브러리 즉 java 로 git을 이것저것 할수있다.
+EGit 은 이클립스에서 git 을 사용할 수 있게 해주는 UI 툴. JGit 은 뒤에서 처리해주는 파트.
+이클립스가 java 로 되있으니까 Egit 은 Jgit 을 이용해서 이것저것 할수 있게 해준다.
+JGit 은 EGit 에 의존성이 없지만 EGit 은 JGit을 의존하고있다.&lt;/p&gt;
+&lt;p&gt;고로 이클립스에서 EGit 을 쓰려면 JGit 도 설치해야한다.&lt;/p&gt;</content:encoded></item><item><title><![CDATA[use unix socket on php]]></title><description><![CDATA[nginx 와 php-fpm 을 연동할 때 지금은 크게 차이가 없지만 예전에는 아래처럼하는게 속도차이가 확연히 났다고 한다.  구글링해보니 크게 성능차이는 없는것 같지만 그래도 이게 좋다고 하니 다 바꿔봤다. …
+listen = 127.0.0.…]]></description><link>https://monthlycode.dev/2013-04-29-use-unix-socket-on-php/</link><guid isPermaLink="false">https://monthlycode.dev/2013-04-29-use-unix-socket-on-php/</guid><pubDate>Mon, 29 Apr 2013 00:58:47 GMT</pubDate><content:encoded>&lt;p&gt;nginx 와 php-fpm 을 연동할 때 지금은 크게 차이가 없지만 예전에는 아래처럼하는게 속도차이가 확연히 났다고 한다.&lt;/p&gt;
+&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;fastcgi_pass 127.0.0.1:9000&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;구글링해보니 크게 성능차이는 없는것 같지만 그래도 이게 좋다고 하니 다 바꿔봤다.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# vi /etc/php-fpm.d/www.conf&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;…
+listen = 127.0.0.1:9000
+…이부분을 아래처럼&lt;/p&gt;
+&lt;p&gt;;listen = 127.0.0.1:9000
+listen = /tmp/php5-fpm.sock&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# vi /etc/nginx/conf.d/virtual.conf&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;…
+fastcgi_pass 127.0.0.1:9000
+…이부분을 아래처럼&lt;/p&gt;
+&lt;p&gt;fastcgi_pass unix:/tmp/php5-fpm.sock&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# service php-fpm reload&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# service nginx restart&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;php5-fpm.sock 파일이 없어서 뭐지뭐지했는데 기본으로 TCP포트를 사용하고 있다면 자동으로 생성된다!~&lt;/p&gt;
+&lt;p&gt;속도가 빨라진건지 아직 잘모르겠다.&lt;/p&gt;
+&lt;p&gt;덧. 보안이슈 해결을 위해 아래와 같이 try_files ~ 부분 한줄을 추가한다.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt; location ~ \.php$ {
+       try_files $uri =404;
+       fastcgi_pass unix:/var/run/php5-fpm.sock;
+       fastcgi_index index.php;
+       fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+       include fastcgi_params;
+   }&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</content:encoded></item><item><title><![CDATA[JIRA 와 Confluence war로 설치하기]]></title><description><![CDATA[회사들어와서 가장먼저 리눅스를 건들게 된 계기가 된 요 두 프로그램. 간단하게 얘네가 뭐하는 놈들이냐 하면. Jira 는 국내에 더 많이 알려진 redmine…]]></description><link>https://monthlycode.dev/2013-04-08-install-jira-and-confluence-by-war/</link><guid isPermaLink="false">https://monthlycode.dev/2013-04-08-install-jira-and-confluence-by-war/</guid><pubDate>Mon, 08 Apr 2013 02:17:54 GMT</pubDate><content:encoded>&lt;p&gt;회사들어와서 가장먼저 리눅스를 건들게 된 계기가 된 요 두 프로그램.&lt;/p&gt;
+&lt;p&gt;간단하게 얘네가 뭐하는 놈들이냐 하면.&lt;/p&gt;
+&lt;p&gt;Jira 는 국내에 더 많이 알려진 redmine 같은 프로그램이다. 이슈들을 등록하고 관리하고 뭐 그런것들이고 플러그인들이 좋은게 너무많다.
+하지만 전~부 유료라서 돈많으면 편하다… 에자일 프로세스할 때 유용하다.
+Confluence 는 사내 wiki 정도로 보면된다. space에 블로그를 포스팅해서 서로 공유하는 거다.&lt;/p&gt;
+&lt;p&gt;그냥 standalone 으로 한번에 설치하면 쉽게 쓸 수 있는거 뭐좀 해보겠다고 war 로 받아서 1주일이상을 삽질한것 같다.
+메뉴얼은 영문밖에 없고 한글판 배포하는 회사들도 그렇게 도움이 안된다.&lt;/p&gt;
+&lt;p&gt;현재 우리회사에서는 두 프로그램 다 스타터버전으로 10명이하 10불내고 사용하고 있으며,
+구입후 1년정도는 지속적인 업그레이드 제품을 다운받을수있다. 그래서 새버전나올때마다 업그레이드 하고있다.
+Trial 버전은 한달을 무료로 사용할 수 있다.
+자세한 설명과 다운은 요기서 ! &lt;a href=&quot;http://www.atlassian.com&quot;&gt;http://www.atlassian.com&lt;/a&gt;
+매달 사용료를 지불하는 OnDemand 와 한번에 지불하고 쭉 사용하는 Download 버전 두가지가 있다.&lt;/p&gt;
+&lt;p&gt;환경은 지난번 포스팅 글이랑 똑같다. centos 6.3 + nginx 1.2.7(지금은 1.2.8) + httpd 2.4 + mod_jk + tomcat 6 &amp;#x26; tomcat 7&lt;/p&gt;
+&lt;p&gt;설치하기전에 간단하게 알아두어야 할 점은 이렇다.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;JIRA는 java 7 + tomcat 7 에서 설치가 가능하다. 그 이하 버전에서도 물론 잘된다.&lt;/li&gt;
+&lt;li&gt;Confluence 는 java 7 은 지원하지만 tomcat 6 에서만 돌아간다. 그래서 mod_jk 를 써서 연결하도록 한다.&lt;/li&gt;
+&lt;li&gt;내장DB를 사용하는 방법도 있고 기존 쓰던 DB에 데이터베이스만 만들어서 사용할 수 있다.
+(JIRA 는 mysql에 Confluence 는 Embedded DB 를 사용해서 설치했다.)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;JIRA 설치.&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&quot;http://www.atlassian.com/software/jira/download&quot;&gt;http://www.atlassian.com/software/jira/download&lt;/a&gt;
+리눅스에 설치할 것이기 때문에 맞는 것을 다운받는다.
+JIRA 5.2.10 WAR (TAR.GZ Archive) 현재는 이파일이 가장 최신이다.
+항상 이런 파일들은 /usr/local/src 에 받는다. (임시 다운로드 폴더 처럼 쓰고 있다)&lt;/p&gt;
+&lt;p&gt;wget 으로 받을때 윈도환경에서 크롬으로 다운받고 받는 도중 다운로드창에서 파일 경로를 복사해서 받는다.&lt;/p&gt;
+&lt;p&gt;그리고 local 로 옮겨준다.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# cd /usr/local/src&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# wget http://wpc.29c4.edgecastcdn.net/8029C4/downloads/software/jira/downloads/atlassian-jira-5.2.10-war.tar.gz&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# tar -zxvf atlassian-jira-5.2.10-war.tar.gz&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# mv atlassian-jira-5.2.10-war /usr/local/atlassian-jira-5.2.10&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# cd /usr/local/atlassian-jira-5.2.10&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;이제 build 를 해야하는데 build 를 하기전에 어플리케이션이 돌때 사용하는 파일들을 어디에 저장할지 지정해주어야한다.
+(WAR 압축 해제를 시킬 곳.)
+vi 에디터로 아래와 같이 수정. 뭐 이파일 수정하지말라고 하는데 그냥 해도된다..
+원래 공식홈에서는 JIRA_HOME 이라는 환경변수를 주고 거기에 이 경로를 넣어주라고 하는데.. 이걸로는 잘설치가 안되었다.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# vi edit-webapp/WEB-INF/classes/jira-application.properties&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;properties&quot;&gt;&lt;pre class=&quot;language-properties&quot;&gt;&lt;code class=&quot;language-properties&quot;&gt;&lt;span class=&quot;token attr-name&quot;&gt;jira.home&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token attr-value&quot;&gt;/usr/local/jira-5.2.10&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;그리고 build 해준다.
+오류 없이 잘끝나면 성공!&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;./build.sh&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;이제 톰캣에 이놈을 붙여주어야 한다.
+그러기전에 아래처럼 환경설정 파일을 하나 만들어주자. 자바 힙메모리를 늘려준다거나 하는거..
+보통 이클립스실행할때 ini 에 설정해주는 놈들이랑 비슷한애들이다.
+Xms - 최소메모리
+Xmx - 최대메모리
+XX:MaxPermSize - Permanant Area Size 를 말하는거 같은데.. 어째든 셋다 똑같이 준다.
+웬만해선 512씩 줘도 상관없다. 768일때 제일 최적의 속도가 나오는듯해서.. 원래 1024쓰고있었다 ㅋㅋ&lt;/p&gt;
+&lt;p&gt;그리고 아래와 같은 파일을 tomcat 6 에도 복사해준다. (Confluence 설치할 때도 쓴다.)&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# cd /usr/local/tomcat7&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# touch bin/setenv.sh&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# vi bin/setenv.sh&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token builtin class-name&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;token assign-left variable&quot;&gt;CATALINA_OPTS&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;-Dorg.apache.jasper.runtime.BodyContentImpl.LIMIT_BUFFER=true -Dmail.mime.decodeparameters=true -Xms768m -Xmx768m -XX:MaxPermSize=768m&quot;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# cp bin/setenv.sh /usr/local/tomcat6/bin/&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;이제 server.xml 을 수정하면 되는데 공홈메뉴얼에서는 이렇게 설명하고 있다.
+build 된 디렉토리에서
+dist-tomcat/tomcat-6/jira.xml 파일의 내용을 복사해서 넣어줘라!
+이게 그 내용이니까 그냥 복사 붙여넣기 하자~!&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# vi /usr/local/tomcat7/conf/server.xml&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;요로코롬 Host 어쩌구 시작하는 곳 밑에 넣어준다.
+…&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;xml&quot;&gt;&lt;pre class=&quot;language-xml&quot;&gt;&lt;code class=&quot;language-xml&quot;&gt;&lt;span class=&quot;token tag&quot;&gt;&lt;span class=&quot;token tag&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;lt;&lt;/span&gt;Host&lt;/span&gt; &lt;span class=&quot;token attr-name&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;localhost&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt;  &lt;span class=&quot;token attr-name&quot;&gt;appBase&lt;/span&gt;&lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;webapps&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt;
+            &lt;span class=&quot;token attr-name&quot;&gt;unpackWARs&lt;/span&gt;&lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;true&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;token attr-name&quot;&gt;autoDeploy&lt;/span&gt;&lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;true&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;token attr-name&quot;&gt;xmlValidation&lt;/span&gt;&lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;false&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;token attr-name&quot;&gt;xmlNamespaceAware&lt;/span&gt;&lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;false&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&gt;&lt;/span&gt;&lt;/span&gt;
+
+&lt;span class=&quot;token tag&quot;&gt;&lt;span class=&quot;token tag&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;lt;&lt;/span&gt;Context&lt;/span&gt; &lt;span class=&quot;token attr-name&quot;&gt;path&lt;/span&gt;&lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;/jira&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;token attr-name&quot;&gt;docBase&lt;/span&gt;&lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;/usr/local/atlassian-jira-5.2.10/dist-tomcat/tomcat-6/atlassian-jira-5.2.10.war&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;token attr-name&quot;&gt;debug&lt;/span&gt;&lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;0&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;token attr-name&quot;&gt;useHttpOnly&lt;/span&gt;&lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;true&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&gt;&lt;/span&gt;&lt;/span&gt;
+
+    &lt;span class=&quot;token tag&quot;&gt;&lt;span class=&quot;token tag&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;lt;&lt;/span&gt;Resource&lt;/span&gt; &lt;span class=&quot;token attr-name&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;UserTransaction&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;token attr-name&quot;&gt;auth&lt;/span&gt;&lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;Container&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;token attr-name&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;javax.transaction.UserTransaction&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt;
+    &lt;span class=&quot;token attr-name&quot;&gt;factory&lt;/span&gt;&lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;org.objectweb.jotm.UserTransactionFactory&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;token attr-name&quot;&gt;jotm.timeout&lt;/span&gt;&lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;60&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;/&gt;&lt;/span&gt;&lt;/span&gt;
+    &lt;span class=&quot;token tag&quot;&gt;&lt;span class=&quot;token tag&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;lt;&lt;/span&gt;Manager&lt;/span&gt; &lt;span class=&quot;token attr-name&quot;&gt;pathname&lt;/span&gt;&lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;/&gt;&lt;/span&gt;&lt;/span&gt;
+
+&lt;span class=&quot;token tag&quot;&gt;&lt;span class=&quot;token tag&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;lt;/&lt;/span&gt;Context&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;그리고 mysql 드라이버와 관련 라이브러리들을 복사해서 넣어주어야 한다. 다운은 요기서.
+&lt;a href=&quot;http://dev.mysql.com/downloads/connector/j&quot;&gt;http://dev.mysql.com/downloads/connector/j&lt;/a&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Tomcat 6 JARs: &lt;a href=&quot;http://www.atlassian.com/software/jira/downloads/binary/jira-jars-tomcat-distribution-6.0-m10-tomcat-6x.zip&quot;&gt;http://www.atlassian.com/software/jira/downloads/binary/jira-jars-tomcat-distribution-6.0-m10-tomcat-6x.zip&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Tomcat 7 JARs: &lt;a href=&quot;http://www.atlassian.com/software/jira/downloads/binary/jira-jars-tomcat-distribution-6.0-m10-tomcat-7x.zip&quot;&gt;http://www.atlassian.com/software/jira/downloads/binary/jira-jars-tomcat-distribution-6.0-m10-tomcat-7x.zip&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;mysql database 를 하나 만들자.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;sql&quot;&gt;&lt;pre class=&quot;language-sql&quot;&gt;&lt;code class=&quot;language-sql&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;CREATE&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;DATABASE&lt;/span&gt; jira &lt;span class=&quot;token keyword&quot;&gt;CHARACTER&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;SET&lt;/span&gt; utf8 &lt;span class=&quot;token keyword&quot;&gt;COLLATE&lt;/span&gt; utf8_bin&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;jdbc 를 이용하는방법과 DataSource를 이용하는 방법 두가지가 있는데 두번째방법은 아래를 참고..(ㅠㅠ해보질 않았다..)
+&lt;a href=&quot;https://confluence.atlassian.com/display/JIRA/Installing+JIRA+on+Tomcat+6.0+or+7.0&quot;&gt;https://confluence.atlassian.com/display/JIRA/Installing+JIRA+on+Tomcat+6.0+or+7.0&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;세팅이 잘 되었다면
+&lt;a href=&quot;http://127.0.0.1:8090/jira&quot;&gt;http://127.0.0.1:8090/jira&lt;/a&gt; 하면 접속이 가능하다.
+nginx+mod&lt;em&gt;jk 를 통해 연결을 해주었다면 &lt;a href=&quot;http://%EB%8F%84%EB%A9%94%EC%9D%B8/jira&quot;&gt;http://도메인/jira&lt;/a&gt; 로 접속이 가능하다.
+[mod&lt;/em&gt;jk 설정방법은 요기서 !]:{{ site.url }}&lt;/p&gt;
+&lt;p&gt;nginx 랑 httpd 두놈은 프록시로 연결해주어야 한다.
+httpd 는 미리 8080 포트를 이용하게 세팅을 해놓았다 . 아래처럼 연결~!&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# vi /etc/nginx/conf.d/virtual.conf&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;...
+server {
+listen 80;
+server_name develop.amuzr.com;
+
+    charset utf-8;
+
+    location / {
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_pass http://127.0.0.1:8080;
+    }
+
+}
+...&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# vi /usr/local/apache2/conf/httpd.conf&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;52번째줄 정도에 port 번호를 8080으로수정.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# vi /etc/nginx/nginx.conf&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;프록시 연결시간을 쪼~끔 늘려주자.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;#proxy &amp;amp; fastcgi setting&lt;/span&gt;
+proxy_read_timeout 1800s&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+proxy_buffer_size 32k&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+proxy_buffers &lt;span class=&quot;token number&quot;&gt;4&lt;/span&gt; 64k&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+proxy_busy_buffers_size 64k&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;세팅중 아래와 같은 에러들을 볼 수 있기 때문에 미리 조치한다.&lt;/p&gt;
+&lt;p&gt;-java.netSocketException: Too many open files&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# ulimit -a&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# ulimit -n 4096&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;재시작할때 같은 문제를 겪지 않기 위해&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# vi /etc/security/limits.conf&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;파일에도 적용한다.&lt;/p&gt;
+&lt;p&gt;-Packet for query is too large&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# vi /etc/my.cnf&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;mysqld&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;..&lt;/span&gt;.
+max_allowed_packet &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; 32M
+&lt;span class=&quot;token punctuation&quot;&gt;..&lt;/span&gt;.&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;이렇게 수정한다.&lt;/p&gt;
+&lt;h2&gt;Confluence 설치&lt;/h2&gt;
+&lt;p&gt;Confluence 설치는 JIRA 와 크게 다르지 않다.
+같은 방법으로 압축을 풀어주고 데이터 폴더를 지정해주고 server.xml 에 context 를 복사해서 넣어주면 끝이다.
+데이터폴더를 confluence 설치폴더 안에 data 폴더를 만들고 넣어주었다.
+/usr/local/src 에 다운 받아서 압축을 풀었다고 가정하고 진행한다.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# mv /usr/local/src/confluence-5.1 /usr/local/&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# cd /usr/local/confluence-5.1&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# vi confluence/WEB-INF/classes/confluence-init.properties&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;properties&quot;&gt;&lt;pre class=&quot;language-properties&quot;&gt;&lt;code class=&quot;language-properties&quot;&gt;..
+&lt;span class=&quot;token attr-name&quot;&gt;confluence.home&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token attr-value&quot;&gt;/usr/local/confluence-5.1/data/&lt;/span&gt;
+..&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# ./build.sh&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# vi /usr/local/tomcat6/conf/server.xml&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;xml&quot;&gt;&lt;pre class=&quot;language-xml&quot;&gt;&lt;code class=&quot;language-xml&quot;&gt;...
+&lt;span class=&quot;token tag&quot;&gt;&lt;span class=&quot;token tag&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;lt;&lt;/span&gt;Context&lt;/span&gt; &lt;span class=&quot;token attr-name&quot;&gt;path&lt;/span&gt;&lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;/confluence&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;token attr-name&quot;&gt;docBase&lt;/span&gt;&lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;/usr/local/confluence-5.1/dist/confluence-5.1.war&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;token attr-name&quot;&gt;debug&lt;/span&gt;&lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;0&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;token attr-name&quot;&gt;reloadable&lt;/span&gt;&lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;true&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&gt;&lt;/span&gt;&lt;/span&gt;
+
+&lt;span class=&quot;token tag&quot;&gt;&lt;span class=&quot;token tag&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;lt;/&lt;/span&gt;Context&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&gt;&lt;/span&gt;&lt;/span&gt;
+...&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;confluence 도 mysql 을 쓰려면 mysql 커넥터드라이버를 넣어주어야 한다.&lt;/p&gt;
+&lt;p&gt;이제
+&lt;a href=&quot;http://%EB%8F%84%EB%A9%94%EC%9D%B8/jira&quot;&gt;http://도메인/jira&lt;/a&gt;
+&lt;a href=&quot;http://%EB%8F%84%EB%A9%94%EC%9D%B8/confluence&quot;&gt;http://도메인/confluence&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;으로 접속하여 설치를 진행하면 된다. 이부분부터는 크게 어렵지 않다.
+중간에 mysql 세팅할때 unicode ~~ utf8 복사해서 잘 넣어준다.&lt;/p&gt;
+&lt;p&gt;만약 중간에 쓰던 파일이 있을경우 설치 도중 import existing 어쩌구.. 하는 부분을 눈여겨 봐서 클릭을해서 가져와야한다.&lt;/p&gt;
+&lt;p&gt;기본적으로 jira confluence 는 주기적으로 xml파일로 백업을해서 압축해서 저장하고 있다. 백업옵션은 나중에 바꿀 수 있으며 용량이 크지 않다.&lt;/p&gt;</content:encoded></item><item><title><![CDATA[PHP 에서 paradox DB 설치하기]]></title><description><![CDATA[paradox 라는 디비가 있는지 오늘 처음 알았다.. 어찌저찌해서 paradox DB를 읽기 위해 PDE 를 찾아서 설치했고
+어찌저찌해서 php 에 paradox 파일을 읽는 모듈이 있다고 해서 찾았다… pecl…]]></description><link>https://monthlycode.dev/2013-04-03-install-paradox-library-in-php/</link><guid isPermaLink="false">https://monthlycode.dev/2013-04-03-install-paradox-library-in-php/</guid><pubDate>Wed, 03 Apr 2013 09:39:25 GMT</pubDate><content:encoded>&lt;p&gt;paradox 라는 디비가 있는지 오늘 처음 알았다..&lt;/p&gt;
+&lt;p&gt;어찌저찌해서 paradox DB를 읽기 위해 PDE 를 찾아서 설치했고
+어찌저찌해서 php 에 paradox 파일을 읽는 모듈이 있다고 해서 찾았다…&lt;/p&gt;
+&lt;p&gt;pecl 패키지 중에 있는데 정상적으로 설치가 안된다.&lt;/p&gt;
+&lt;p&gt;아래와 같이 진행하자.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# yum install intltool&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# wget http://jaist.dl.sourceforge.net/project/pxlib/pxlib/0.6.5/pxlib-0.6.5.tar.gz&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# tar -zxvf pxlib-0.6.5.tar.gz&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# cd pxlib-0.6.5&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# ./configure&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# make&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# make install&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# wget http://pecl.php.net/get/paradox-1.4.3.tgz&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# tar -zxvf paradox-1.4.3.tgz&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# cd paradox-1.4.3&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# phpize&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# ./configure&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# make&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# make install&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;설정 파일생성을 해주고.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# vi /etc/php.d/paradox.ini&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;아래 내용을 넣어준다.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;ini&quot;&gt;&lt;pre class=&quot;language-ini&quot;&gt;&lt;code class=&quot;language-ini&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;;Enable paradox extension module&lt;/span&gt;
+&lt;span class=&quot;token constant&quot;&gt;extension&lt;/span&gt;&lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt;paradox.so&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;phpinfo 로 확인해 보자.&lt;/p&gt;</content:encoded></item><item><title><![CDATA[Windows8 에서 mysql 느려지는 문제]]></title><description><![CDATA[php나 jsp 개발시 디비연결을 할때 보통 로컬환경에서는 localhost로 연결을 한다.
+windows 7 까지는 IPv4 와 IPv6 를 같이 쓰기 때문에 localhost로 연결하게 되면 127.0.0.…]]></description><link>https://monthlycode.dev/2013-04-02-mysql-slow-on-windows8/</link><guid isPermaLink="false">https://monthlycode.dev/2013-04-02-mysql-slow-on-windows8/</guid><pubDate>Tue, 02 Apr 2013 01:39:28 GMT</pubDate><content:encoded>&lt;p&gt;php나 jsp 개발시 디비연결을 할때 보통 로컬환경에서는 localhost로 연결을 한다.
+windows 7 까지는 IPv4 와 IPv6 를 같이 쓰기 때문에 localhost로 연결하게 되면 127.0.0.1 으로 잘 연결이 된다.&lt;/p&gt;
+&lt;p&gt;하지만 ! windows 8 에서는 IPv6 를 기본으로 쓰고 있어서 localhost 로 연결 시 ::80 으로 연결된다.&lt;/p&gt;
+&lt;p&gt;확인은 cmd창에서 이렇게&lt;/p&gt;
+&lt;p&gt;ping localhost&lt;/p&gt;
+&lt;p&gt;해결하는 방법은 여러가지가 있다.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;IPv6 을 강제로 끄는 방법이다.
+네트워크 환경설정에서 IPv6 을 끄고 레지스트리에서 DisabledComponents 라는 키를 추가해주어야 한다.
+참고 : &lt;a href=&quot;http://www.techunboxed.com/2012/08/how-to-disable-ipv6-in-windows-8.html&quot;&gt;http://www.techunboxed.com/2012/08/how-to-disable-ipv6-in-windows-8.html&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;그냥 마음편하게 디비연결을 하는 코드에 모든 localhost 를 127.0.0.1로 바꿔준다.&lt;/li&gt;
+&lt;/ul&gt;</content:encoded></item><item><title><![CDATA[CentOS6 에 yum 으로 nginx + php-fpm + mysql 설치하기]]></title><description><![CDATA[기존에 회사에서 아파치 httpd-2.2, php-5.2, mysql-5.1 을 사용하다가 자주 뻗기도 하고 방법을 찾기 어려웠다.
+결국 SSD 달린 새서버로 바꾸게 되어 nginx…]]></description><link>https://monthlycode.dev/2013-03-28-install-nginxphpfpmmysql-on-centos6-yum/</link><guid isPermaLink="false">https://monthlycode.dev/2013-03-28-install-nginxphpfpmmysql-on-centos6-yum/</guid><pubDate>Thu, 28 Mar 2013 05:54:43 GMT</pubDate><content:encoded>&lt;p&gt;기존에 회사에서 아파치 httpd-2.2, php-5.2, mysql-5.1 을 사용하다가 자주 뻗기도 하고 방법을 찾기 어려웠다.
+결국 SSD 달린 새서버로 바꾸게 되어 nginx를 써보기로 했다.
+바이너리 설치도 있지만 기왕 최신껄 쓰는김에 계속 업데이트 해주는 방법을 쓰기로 결정.&lt;/p&gt;
+&lt;h4&gt;설치할 환경 및 버전&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;centos 6.3(64bit) : 가능하면 최신으로 쓰기 위해 6.3으로 설치했다. 5.x 로도 비슷한방법으로 설치가능&lt;/li&gt;
+&lt;li&gt;nginx-1.2.7 : stable 최신버전 이고 1.3.x 개발버전이 있다.&lt;/li&gt;
+&lt;li&gt;php-5.3.23 : 기존 프로그램이 5.4로 바로올렸을때 strict 에러가 많이 나기 때문에 결정. 처음 설치하는거면 5.4를 해도 무방하다.&lt;/li&gt;
+&lt;li&gt;mysql-5.5.31 : 현재 5.6은 바이너리로 설치만 가능한것 같다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;처음 centos 설치 후 아무 세팅이 되어있지 않은 상태에서 root 권한으로 진행을 하도록 한다.
+먼저 프로그램들을 전부 update 해준다.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;shall&quot;&gt;&lt;pre class=&quot;language-shall&quot;&gt;&lt;code class=&quot;language-shall&quot;&gt;#yum update&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;그리고 &lt;code class=&quot;language-text&quot;&gt;yum repolist&lt;/code&gt;를 설정해 주어야 한다.
+최종 목표는 아래와 같이되면 된다.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;%7B%7B%20site.url%20%7D%7D/assets/repolist.png&quot;&gt;&lt;/p&gt;
+&lt;h5&gt;Atomic 저장소 설치&lt;/h5&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;#wget -q -O - http://www.atomicorp.com/installers/atomic | sh&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h5&gt;RHEL EPEL 저장소 설치&lt;/h5&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+wget http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
+sudo rpm -Uvh remi-release-6*.rpm epel-release-6*.rpm&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;항상 &lt;code class=&quot;language-text&quot;&gt;remi&lt;/code&gt;저장소를 사용하기 위해서는 &lt;code class=&quot;language-text&quot;&gt;yum.repos.d&lt;/code&gt; 디렉토리에서 &lt;code class=&quot;language-text&quot;&gt;remi.repo enabled = 1&lt;/code&gt; 로 바꾸어 주면 된다.&lt;/p&gt;
+&lt;h5&gt;nginx 저장소 설치&lt;/h5&gt;
+&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;nginx&lt;/code&gt; 저장소는 &lt;code class=&quot;language-text&quot;&gt;yum.repos.d&lt;/code&gt; 에 직접 파일을 추가해주어야 한다(&lt;code class=&quot;language-text&quot;&gt;/etc/yum.repos.d/nginx.repo&lt;/code&gt;)&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;[nginx]
+name=nginx repo
+baseurl=http://nginx.org/packages/centos/$releasever/$basearch/
+gpgcheck=0
+enabled=1&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;이제 저장소가 다 등록이 되어 간단하게 &lt;code class=&quot;language-text&quot;&gt;yum&lt;/code&gt; 으로 설치할 수 있다.
+아래와 같이 입력&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;#yum install nginx
+#yum --enablerepo=remi install php php-fpm php-mysql mysql-server mysql-devel&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;보면서 &lt;code class=&quot;language-text&quot;&gt;y&lt;/code&gt; 를 눌러주면되고 &lt;code class=&quot;language-text&quot;&gt;-y&lt;/code&gt;옵션을 주어도 좋다.&lt;/p&gt;
+&lt;p&gt;필요에 따라 php 모듈도 설치한다. (기본적으로는 설치되지 않는다.)&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;#yum install php-gd php-mcrypt php-pear&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;방화벽 예외처리를 해주고&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;#iptables -I INPUT -p tcp --dport 80 -j ACCEPT
+#iptables -I OUTPUT -p tcp --sport 80 -j ACCEPT&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;서비스에 대몬 등록&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;/sbin/chkconfig nginx on
+/sbin/chkconfig mysqld on
+/sbin/chkconfig php-fpm on&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;서비스 시작 재시작 중지는 아래와 같이한다. &lt;code class=&quot;language-text&quot;&gt;(start | restart | stop)&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;/etc/init.d/nginx start
+/etc/init.d/php-fpm start
+/etc/init.d/mysql start&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;/etc/init.d/&lt;/code&gt; 대신 &lt;code class=&quot;language-text&quot;&gt;service 이름&lt;/code&gt; 으로 입력해도 좋다.&lt;/p&gt;
+&lt;p&gt;그리고 MySQL root 계정 비밀번호 설정을 한다.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;/usr/bin/mysqladmin -uroot password &amp;#39;new-password&amp;#39;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;각종 에러로그 확인은 아래와 같이 한다.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;/var/log/nginx/error.log
+/var/log/php-fpm/error.log
+/var/log/mysqld.log&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;nginx 와 php-fpm 을 연결하고 virtual-host 설정하는 부분은 다음 포스트에 이어서 작성하도록 하겠다.&lt;/p&gt;
+&lt;p&gt;참고 : &lt;a href=&quot;http://blog.debug.so/entry/How-to-setuo-nginx-php-mysql-Korean&quot;&gt;NPM설치&lt;/a&gt;,&lt;a href=&quot;http://www.rackspace.com/knowledge_center/article/installing-rhel-epel-repo-on-centos-5x-or-6x&quot;&gt;저장소설치1&lt;/a&gt;,&lt;a href=&quot;http://pat.im/924&quot;&gt;저장소설치2&lt;/a&gt;,&lt;a href=&quot;http://www.i-swear.com/148&quot;&gt;방화벽예외처리&lt;/a&gt;&lt;/p&gt;</content:encoded></item><item><title><![CDATA[nginx 411 length required error]]></title><description><![CDATA[사용해서 이미지를 보내줄 때
+헤더 내용 중  값이 없어서 (-1 리턴)  로 보내준다.  Apach Http 서버일때는  라도 그냥 처리를 해주었기 때문에문제가 없었지만,
+nginx 는 1.3.…]]></description><link>https://monthlycode.dev/2013-03-27-nginx-411-length-required-error/</link><guid isPermaLink="false">https://monthlycode.dev/2013-03-27-nginx-411-length-required-error/</guid><pubDate>Wed, 27 Mar 2013 12:18:13 GMT</pubDate><content:encoded>&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;httpPost&lt;/code&gt; 사용해서 이미지를 보내줄 때
+헤더 내용 중 &lt;code class=&quot;language-text&quot;&gt;Content-Length&lt;/code&gt; 값이 없어서 &lt;em&gt;(-1 리턴)&lt;/em&gt; &lt;code class=&quot;language-text&quot;&gt;chunked&lt;/code&gt; 로 보내준다. &lt;code class=&quot;language-text&quot;&gt;isChunked true&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Apach Http&lt;/strong&gt; 서버일때는 &lt;code class=&quot;language-text&quot;&gt;chunked&lt;/code&gt; 라도 그냥 처리를 해주었기 때문에문제가 없었지만,
+nginx 는 1.3.9 버전 이후부터 처리가 가능하다.
+그 이하 버전에서는 바이너리 설치하면서 모듈을 넣어주어야 한다.&lt;/p&gt;
+&lt;p&gt;어플 단에서 간단하게 몇줄 추가해서 해결할 수 있다.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;java&quot;&gt;&lt;pre class=&quot;language-java&quot;&gt;&lt;code class=&quot;language-java&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;byte&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; byteArray &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; stream&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;toByteArray&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;int&lt;/span&gt; streamLength &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; stream&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;toByteArray&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;length&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;InputStreamBody&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;ByteArrayInputStream&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;byteArray&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;image/jpeg&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; filename&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;getContentLength&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;long&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;streamLength&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;getContentLength&lt;/code&gt;는 항상 &lt;code class=&quot;language-text&quot;&gt;-1&lt;/code&gt;을 리턴하게 되있는데 오버라이딩해서 파일크기를 넣어주면 이미지를 보낼 때 헤더에 &lt;code class=&quot;language-text&quot;&gt;Content-Length&lt;/code&gt;를 잘 넣어주고 &lt;code class=&quot;language-text&quot;&gt;chunked&lt;/code&gt;로 처리하지 않는다.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;UPDATE&lt;/strong&gt; 현재 2016-12-07 버전이 충분히 높아 문제 없다. 해당 이슈를 찾았던 document 도 찾을 수 없다.&lt;/p&gt;</content:encoded></item></channel></rss>

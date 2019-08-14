@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+<url> <loc>https://monthlycode.dev/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/3</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/4</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/5</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2013-03-27-nginx-411-length-required-error/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2013-03-28-install-nginxphpfpmmysql-on-centos6-yum/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2013-04-02-mysql-slow-on-windows8/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2013-04-03-install-paradox-library-in-php/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2013-04-08-install-jira-and-confluence-by-war/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2013-04-29-use-unix-socket-on-php/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2013-05-02-differencewithegitandjgit/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2013-07-13-control-space-in-print-html-pages/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2013-07-18-jailkit-prevent-connection-root-directories-using-sftp/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2013-08-07-encryption-and-decryption-in-mysql/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2013-08-12-add-and-authorize-symbolic-links/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2013-08-21-change-encoding-on-centos/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2013-09-02-kernel-update-problem-on-centos/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2014-01-02-comment-out-in-vi-editor/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2014-01-02-redirect-http-to-https-on-nginx/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2014-08-25-phpauthorityproblemwithsomecommands/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2015-04-08-sequence-engine-in-mariadb/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2015-07-30-fix-some-cells-in-table/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2015-08-19-install-vsftpd-in-centos/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2015-10-29-some-redis-error/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2015-12-04-out-of-memory-on-linux/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2016-02-15-limit-in-each-databases/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2016-02-15-connect-mssql-in-linux-using-yum/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2017-04-03-setting-react-and-redux-app/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2017-04-04-redux-vs-mobx/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/2017-07-30-make-monthly-coding-site/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/about/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+</urlset>

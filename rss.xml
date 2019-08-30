@@ -1,4 +1,22 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[Monthly Code]]></title><description><![CDATA[Coding every month]]></description><link>https://monthlycode.dev</link><generator>RSS for Node</generator><lastBuildDate>Wed, 28 Aug 2019 12:53:03 GMT</lastBuildDate><item><title><![CDATA[자바스크립트 클린코드]]></title><description><![CDATA[…]]></description><link>https://monthlycode.dev/2019-08-28-javascript-cleancode/</link><guid isPermaLink="false">https://monthlycode.dev/2019-08-28-javascript-cleancode/</guid><pubDate>Wed, 28 Aug 2019 12:20:12 GMT</pubDate><content:encoded>&lt;h1&gt;들어가며&lt;/h1&gt;
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[Monthly Code]]></title><description><![CDATA[Coding every month]]></description><link>https://monthlycode.dev</link><generator>RSS for Node</generator><lastBuildDate>Fri, 30 Aug 2019 09:24:31 GMT</lastBuildDate><item><title><![CDATA[자바스크립트 클린코드]]></title><description><![CDATA[React: component 를 hooks 로 바꾸기 React를 먼저 알아보자 React 빠르게 훑어보기 컴포넌트 라이프사이클 JSX ? Redux 도 알아보자. Redux middleware 를 RxJS 로 써보자. 빠르게 APP…]]></description><link>https://monthlycode.dev/2019-08-30-react-hooks/</link><guid isPermaLink="false">https://monthlycode.dev/2019-08-30-react-hooks/</guid><pubDate>Fri, 30 Aug 2019 07:16:52 GMT</pubDate><content:encoded>&lt;h1&gt;React: component 를 hooks 로 바꾸기&lt;/h1&gt;
+&lt;h1&gt;React를 먼저 알아보자&lt;/h1&gt;
+&lt;h2&gt;React 빠르게 훑어보기&lt;/h2&gt;
+&lt;h3&gt;컴포넌트&lt;/h3&gt;
+&lt;h3&gt;라이프사이클&lt;/h3&gt;
+&lt;h3&gt;JSX ?&lt;/h3&gt;
+&lt;h2&gt;Redux 도 알아보자.&lt;/h2&gt;
+&lt;h2&gt;Redux middleware 를 RxJS 로 써보자.&lt;/h2&gt;
+&lt;h2&gt;빠르게 APP 시작하기 with CRA&lt;/h2&gt;
+&lt;h2&gt;Typescript 도 써보자&lt;/h2&gt;
+&lt;h2&gt;테스트는 선택이 아니라 필수&lt;/h2&gt;
+&lt;h3&gt;컴포넌트&lt;/h3&gt;
+&lt;h3&gt;redux&lt;/h3&gt;
+&lt;h3&gt;redux-observable&lt;/h3&gt;
+&lt;h3&gt;storybook&lt;/h3&gt;
+&lt;h1&gt;Hooks 로 바꿔보자&lt;/h1&gt;
+&lt;h2&gt;함수형 컴포넌트&lt;/h2&gt;
+&lt;h2&gt;Redux 도 바꿔보자&lt;/h2&gt;
+&lt;h2&gt;테스트 방식을 바꾸자&lt;/h2&gt;</content:encoded></item><item><title><![CDATA[자바스크립트 클린코드]]></title><description><![CDATA[…]]></description><link>https://monthlycode.dev/2019-08-28-javascript-cleancode/</link><guid isPermaLink="false">https://monthlycode.dev/2019-08-28-javascript-cleancode/</guid><pubDate>Wed, 28 Aug 2019 12:20:12 GMT</pubDate><content:encoded>&lt;h1&gt;들어가며&lt;/h1&gt;
 &lt;p&gt;프로그램을 짜다 보면, 코드를 쓰는 시간보다 코드를 읽는 시간이 훨씬 더 많다. 우리 개발자들에게 체크아웃해 코드를 꺼낼 때보다 체크인해서 코드를 넣을 때 더 깨끗한 상태로 만들어야 할 의무가 있다.&lt;/p&gt;
 &lt;p&gt;이 글은 단순히 스타일 가이드가 아니라 자바스크립트(JavaScript)로 코드를 작성할 때 자기도 만족스럽고 남도 만족스럽도록 깨끗한 코드를 작성하는 방법을 소개한다. 평상시에 놓치기 쉽고 실수하기 쉬운 여러가지 패턴을 실제 예를 들면서 소개하려고 한다. 이 글에서 소개하는 원칙들을 알게된다해서 당장 더 나은 개발자가 되는 것은 아니며 코드를 작성할 때 실수를 하지 않게 해주는 것은 아니다. 하지만 팀원들과 같이 코드를 리뷰하며 점점 완벽하게 만들어가야 한다.&lt;/p&gt;
 &lt;p&gt;자바스크립트를 1~2년간 사용해봤던 웹개발자를 대상으로 작성하였다. 변수의 선언부터 함수의 작성방법, 동시성까지 짧지만 자바스크립트 개발자라면 필수로 알아야 될 내용을 담았다.
@@ -111,7 +129,7 @@ dragonball &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span 
 &lt;p&gt;변수의 할당은 스코프의 시작 부분에서 하라&lt;/p&gt;
 &lt;p&gt;변수를 할당할때는 필요하고 합리적인 장소에 두자.&lt;/p&gt;
 &lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;javascript&quot;&gt;&lt;pre class=&quot;language-javascript&quot;&gt;&lt;code class=&quot;language-javascript&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;// 필요없는 함수 호출&lt;/span&gt;
-&lt;span class=&quot;token keyword&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token parameter&quot;&gt;hasName&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token parameter&quot;&gt;hasName&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
 &lt;span class=&quot;token keyword&quot;&gt;const&lt;/span&gt; name &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;getName&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
 
 &lt;span class=&quot;token keyword&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;!&lt;/span&gt;hasName&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
@@ -124,7 +142,7 @@ dragonball &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span 
 &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
 
 &lt;span class=&quot;token comment&quot;&gt;// good&lt;/span&gt;
-&lt;span class=&quot;token keyword&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token parameter&quot;&gt;hasName&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token parameter&quot;&gt;hasName&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
 &lt;span class=&quot;token keyword&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;!&lt;/span&gt;hasName&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
   &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;token boolean&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
 &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;

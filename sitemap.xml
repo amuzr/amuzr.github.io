@@ -32,5 +32,7 @@
 <url> <loc>https://monthlycode.dev/2017-04-04-redux-vs-mobx/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://monthlycode.dev/2017-07-30-make-monthly-coding-site/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://monthlycode.dev/2019-08-28-javascript-cleancode/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/project/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://monthlycode.dev/project/monthly-coding/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://monthlycode.dev/about/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 </urlset>
